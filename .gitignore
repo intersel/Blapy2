@@ -2,3 +2,4 @@ old/**
 node_modules/**
 docker-compose.yml
 .idea/**
+dist/**

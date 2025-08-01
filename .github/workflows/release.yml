@@ -51,6 +51,9 @@ jobs:
           git commit -m "chore: build dist/blapy2.js [skip ci]" || echo "no changes"
           git push
 
+      - name: Install jq (for reading version from package.json)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Bump version + tag
         id: version
         run: |
