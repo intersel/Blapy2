@@ -24,7 +24,8 @@ import { Router } from './core/Router.js';
 import { BlapyBlock } from './core/BlapyBlock.js';
 
 // ⛓ Active l'extension HTMLElement.prototype.Blapy()
-import './modules/Compatibility.js';
+import * as BlapyCompat from './modules/Compatibility.js';
+if (BlapyCompat.enableJQueryLikeSyntax) BlapyCompat.enableJQueryLikeSyntax();
 
 // 👇 Attach à window pour debug/accès global éventuel
 window.Blapy2 = {

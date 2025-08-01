@@ -11,6 +11,12 @@ export default defineConfig({
     },
     outDir: 'dist',
     emptyOutDir: true,
+    minify: 'terser', // obligatoire pour terserOptions
+    terserOptions: {
+      format: {
+        comments: false, // ⛔️ supprime tous les commentaires
+      },
+    },
     rollupOptions: {
       external: [],
     },
