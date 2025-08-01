@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<!-- To run the current sample code in your own environment, copy this to an html page. -->
+<html>
+<head>
+	<title>Json Example</title>
+	<meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+	<link rel="stylesheet" href="main.css" />
+    <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
+    <script src="../../lib/mustache/mustache.js"></script>
+    <script src="../../lib/navigo/index.js"></script>
+    <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
+    <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+    <script src="../../lib/json5/index.min.js"></script>
+    <script src="../../lib/iFSM/iFSM.js"></script>
+    <script type="text/javascript" src="../../lib/json2html/json2html.js"></script>
+</head>
+<body id="myBlapy">
+	<div>
+		<h1>Some of the Blapy features used in this demo:</h1>
+		<ul>
+			<li>definition of the html template in blapy blocks</li>
+			<li>Use of the "xmp" tag to escape the html definition of our template in firtname</li>
+			<li>Use of the "updateBlock" blapy message to update the results block</li>
+			<li>Data input is a pure json object. (Blapy accepts data to be a string containing a json structure...)</li>
+			<li>Use of different templates to display data in the "Blapy Block 5" section</li>
+			<li>Use of the "updateBlock" event message to update the tables</li>
+		</ul>
+	</div>
+
+	<h1>Blapy demos using json data and Mustache Templating engine (3)</h1>
+	<p>The Form updates the "results" block using "updateBlock" blapy event called from a javascript script.</p>
+	<p>Other demos:
+		<ul>
+			<li><a href="index.html">Update "results" block with standard Blapy blocks with json inside</a></li>
+			<li><a href="index-jsonfromform.html">Form calls pure json and "results" block is updated with the "data-blapy-embedding-blockid" feature</a></li>
+		</ul>
+	</p>
+	<h1>Select values with the json feature of Blapy </h1>
+	<p>Fill the following form:</p>
+
+	<form id="myForm">
+		Choose a firstname:
+		<span
+			id="fnameOptionsFirstName"
+			data-blapy-container="true"
+			data-blapy-container-name="fnameOptions"
+			data-blapy-container-content="fnameOptionsFirstName"
+			data-blapy-update="json"
+			data-blapy-template-wrap='<select name="firstname" onChange="getJson();">'
+			data-blapy-template-mustache-delimiterStart="<%"
+			data-blapy-template-mustache-delimiterEnd="%>"
+		>
+		<xmp style="display:none;">
+			<option value="<%firstname%>"><%firstname%></option>
+		</xmp>
+		</span>
+		<br>
+		Choose a lastname:
+		<span
+			id="fnameOptionsLastName"
+			data-blapy-container="true"
+			data-blapy-container-name="fnameOptions"
+			data-blapy-container-content="fnameOptionsLastName"
+			data-blapy-update="json"
+			data-blapy-template-init="optionvalues.json"
+			data-blapy-template-init-purejson="0"
+		>
+		<xmp>
+			<img src="img/{{lastname}}.png" width="15px"><input name="lastname" type="radio" value="{{lastname}}" {{selected}} onChange="getJson();">{{lastname}}</input>
+		</xmp>
+		</span>
+	</form>
+
+	<h1>Blapy Block results in a Table</h1>
+	<div id="results"
+			data-blapy-container="true"
+			data-blapy-container-name="results"
+			data-blapy-container-content="results"
+			data-blapy-update="json"
+			data-blapy-template-file="arrayvalues.tpl"
+			data-blapy-template-wrap="<table>"
+			data-blapy-template-init="arrayvalues.data.php"
+			data-blapy-template-init-params="{'action':'some','purejson':0}"
+			data-blapy-template-init-purejson="0"
+		>
+	</div>
+	<h1>Blapy Block 2 results in a second Table</h1>
+	<div id="resultbis"
+			data-blapy-container="true"
+			data-blapy-container-name="results"
+			data-blapy-container-content="results2"
+			data-blapy-update="json"
+			data-blapy-template-file="arrayvalues2.tpl"
+			data-blapy-template-wrap="<table>"
+			data-blapy-template-init-params="{'action':'all','purejson':1}"
+			data-blapy-template-init-method="POST"
+			data-blapy-template-init-purejson="1"
+		>
+	</div>
+	<h1>Blapy Block 3 results in a third Table</h1>
+	<div id="resultter"
+			data-blapy-container="true"
+			data-blapy-container-name="results"
+			data-blapy-container-content="results3"
+			data-blapy-update="json"
+			data-blapy-template-file="arrayvalues_subblock.tpl"
+			data-blapy-template-wrap="<table>"
+			data-blapy-template-init-params="{'action':'one','purejson':1}"
+			data-blapy-template-init-method="GET"
+			data-blapy-template-init-purejson="1"
+			data-blapy-updateblock-ondisplay="1"
+			data-blapy-noblapydata="1"
+		>
+	</div>
+
+	<h1>Blapy Block 4 results in a forth Table</h1>
+	<div id="resultquart"
+			data-blapy-container="true"
+			data-blapy-container-name="results"
+			data-blapy-container-content="results4"
+			data-blapy-update="json"
+			data-blapy-template-file="arrayvalues2.tpl"
+			data-blapy-template-wrap="<table>"
+			data-blapy-template-init-params="{'action':'someinresults','purejson':1}"
+			data-blapy-template-init-method="GET"
+			data-blapy-template-init-purejson="1"
+			data-blapy-template-init-fromproperty="data"
+			data-blapy-template-init-search="firstname=="
+			data-blapy-updateblock-ondisplay="1"
+			data-blapy-noblapydata="1"
+		>
+	</div>
+	<h1>Blapy Block 5 results with different output templates</h1>
+	<div style="margin: 5px 0 15px 0">
+		<input name="template" type="radio" value="firstTPL">firstTPL
+		<input name="template" type="radio" value="2ndTPL" checked>2ndTPL
+
+		<script>
+			$('[name=template]').on('change',function(){
+				getJson($(this).val())
+			})
+		</script>
+	</div>
+	<div id="resultfive"
+			data-blapy-container="true"
+			data-blapy-container-name="results"
+			data-blapy-container-content="results2"
+			data-blapy-update="json"
+			data-blapy-template-default-id="2ndTPL"
+			data-blapy-template-init-purejson="1"
+			data-blapy-template-init-params="{'action':'someinresults','purejson':1}"
+			data-blapy-template-init-fromproperty="data"
+			data-blapy-noblapydata="1"
+		>
+		<xmp style="display:none" data-blapy-container-tpl="true" data-blapy-container-tpl-id="firstTPL">
+	    My firstname is {{firstname}}!<br>
+	  </xmp>
+	  <xmp style="display:none" data-blapy-container-tpl="true" data-blapy-container-tpl-id="2ndTPL">
+			My lastname is {{lastname}}!<br>
+	  </xmp>
+	</div>
+</body>
+
+    <script type="module">
+        import Blapy2 from "../../src/index.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+			let blapy = document.querySelector("#myBlapy");
+
+			blapy.Blapy({
+			debug: true,
+    		logLevel: 3,
+			fsmExtension:{
+				'PageReady':{
+				'alertUs': {
+					init_function: function(parameters, event, data){
+						console.log(this)
+								if (data == undefined) data="nothing";
+					alert('alertUs called in '+this.myUIObject.attr('id')+' says: '+data);
+					}
+				}
+				}
+			}
+			});
+		
+	/* update the 'results' block from pure json... */
+	window.getJson = function(tpl)
+	{
+
+		console.log(tpl)
+
+		if (tpl)
+		{
+			console.log(document.querySelector("#myBlapy").Blapy().myFSM)
+			document.querySelector("#myBlapy").Blapy().myFSM.trigger('postData',
+				{
+					"aUrl": "testForm.php",
+					"params":{
+						"embeddingBlockId":"results",
+						"templateId": tpl,
+						"firstname":$("select[name=firstname]",'#myForm').val(),
+						"lastname":$('input[name=lastname]:checked', '#myForm').val()
+					}
+				}
+			);
+		}
+		else
+		{
+			console.log("test")
+			let		params = {"embeddingBlockId":"results"};
+
+			jQuery.ajax({
+				type: 'GET',
+				dataType: 'json',
+				data: {
+					pureJson:1,
+					firstname:$("select[name=firstname]",'#myForm').val(),
+					lastname:$('input[name=lastname]:checked', '#myForm').val()
+				},
+				url: "testForm.php",
+				crossDomain: true,
+				success: function(data, textStatus, jqXHR) {
+					document.querySelector('#myBlapy').Blapy().myFSM.trigger('updateBlock',{"html":data,"params":params})
+				}
+			});
+		}
+	}
+
+		//catch errors
+
+	});
+
+
+	$("body").append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()));
+</script>
+
+</html>

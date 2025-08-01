@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Blapy Demo - Bootstrap Four Column Gallery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="Description" lang="en" content="Blapy Demo on blog articles" />
+    <meta name="author" content="Intersel" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- icons -->
+    <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <!-- Bootstrap Core CSS file -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+
+    <!-- Override CSS file - add your own CSS rules -->
+    <link rel="stylesheet" href="assets/css/styles.css" />
+
+    <!-- Conditional comment containing JS files for IE6 - 8 -->
+    <!--[if lt IE 9]>
+      <script src="assets/js/html5.js"></script>
+      <script src="assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle collapsed"
+            data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <!-- /.navbar-header -->
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li><a href="#">Nav item 1</a></li>
+            <li><a href="#">Nav item 2</a></li>
+            <li><a href="#">Nav item 3</a></li>
+          </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container-fluid -->
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Page Content -->
+    <div id="myBlapy" class="container-fluid">
+      <div class="page-header">
+        <h1>Blapy Demo - Bootstrap Four Column Gallery</h1>
+        <p>
+          This demo shows how Blapy can manage dynamically the loading and the
+          display of blapy blocks only when they should appear...<br /><br />
+          To see it, scroll down the page and the blog articles will be loaded
+          and displayed when they need to be... thanks to Blapy :-)<br />
+          It will stop when it will reach the 10th row... you can of course
+          display more than that! It's just for the demo ;-)
+        </p>
+        <p></p>
+        <p>
+          This template ""Bootstrap four column gallery" was created by
+          <a href="http://maxdesign.com.au/">Russ Weakley, Max Design</a>.<br />
+          It can be found on
+          <a
+            href="https://github.com/russmaxdesign/08-bootstrap-four-column-gallery"
+            >GitHub here</a
+          ><br />
+        </p>
+
+        <p>
+          Posted by <span class="glyphicon glyphicon-user"></span>
+          <a href="#">Emmanuel Podvin</a> on
+          <span class="glyphicon glyphicon-time"></span> 06 june 2016 10:00 am
+        </p>
+      </div>
+      <div
+        id="mainContainer-0"
+        data-blapy-container="true"
+        data-blapy-container-name="mainContainer-0"
+        data-blapy-container-content="content-0"
+        data-blapy-updateblock-ondisplay="true"
+        data-blapy-href="blog_articles.php"
+      ></div>
+      <!-- /.row -->
+
+      <hr />
+      <footer class="margin-tb-3">
+        <div class="row">
+          <div class="col-lg-12">
+            <p>Copyright &copy; Blapy 2016</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <!-- /.container-fluid -->
+
+    <!-- JQuery scripts -->
+    <script src="../../lib/navigo/index.js"></script>
+    <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
+    <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
+    <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+    <script src="../../lib/iFSM/iFSM.js"></script>
+    <!-- Bootstrap Core scripts -->
+    <script src="assets/js/bootstrap.min.js"></script>
+
+    <script type="module">
+      import Blapy2 from "../../src/index.js";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const blapyContainer = document.querySelector("#myBlapy");
+
+        blapyContainer.Blapy({
+          debug: true, // Active le debug général
+          logLevel: 3, // Niveau max (1: errors, 2: warnings, 3: all)
+          alertError: false, // Pas d'alertes popup
+
+          // Debug spécifique à iFSM
+          debugIfsm: true, // Active le debug pour la FSM
+          LogLevelIfsm: 3, // Niveau max pour iFSM
+        });
+
+        blapyContainer.Blapy().myFSM.debug = true;
+        blapyContainer.Blapy().myFSM.LogLevel = 3;
+
+        blapyContainer.addEventListener(
+          "Blapy_ErrorOnPageChange",
+          (event, error) => {
+            console.error(`Blapy error ${error}`);
+          },
+        );
+      });
+    </script>
+  </body>
+</html>

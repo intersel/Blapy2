@@ -1,0 +1,6 @@
+[
+	{firstname: "John",lastname: "Doe"},
+	{firstname: "Bob",lastname: "Dylan"},
+	{firstname: "Peter",lastname: "Rabbit"},
+	{firstname: "Nina",lastname: "Hagen"},
+]

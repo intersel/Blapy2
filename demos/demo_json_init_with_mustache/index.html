@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!-- To run the current sample code in your own environment, copy this to an html page. -->
+<html>
+<head>
+	<title>Json Example</title>
+	<meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+	<link rel="stylesheet" href="main.css" />
+    <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
+    <script src="../../lib/mustache/mustache.js"></script>
+    <script src="../../lib/navigo/index.js"></script>
+    <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
+    <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+    <script src="../../lib/json5/index.min.js"></script>
+    <script src="../../lib/iFSM/iFSM.js"></script>
+    <script type="text/javascript" src="../../lib/json2html/json2html.js"></script>
+</head>
+<body id="myBlapy">
+	<h1>Blapy demos using json data and Mustache Templating engine</h1>
+	<p>This demo uses blapy blocks to receive json and to update blocks</p>
+	<p>It updates the "results" block with standard Blapy blocks with json inside</p>
+	<p>Other demos:
+		<ul>
+			<li><a href="index-jsonfromform.html">Form calls pure json and "results" block is updated with the "data-blapy-embedding-blockid" feature</a></li>
+			<li><a href="index-purejson.html">Update of "results" block using "updateBlock" blapy event</a></li>
+		</ul>
+	</p>
+	<h1>Select values with the json feature of Blapy </h1>
+	<p>Fill the following form:</p>
+	<form id="myForm" action="testForm.php" data-blapy-link="true" method="POST">
+		Choose a firstname:
+		<!-- get the template from optionsTemplate.tpl (contains options values) that will be wrapped with a select -->
+		<!-- is initialised by the next blapy bloc by sharing the same data-blapy-container-name -->
+		<span
+			id="fnameOptionsFirstName"
+			data-blapy-container="true"
+			data-blapy-container-name="fnameOptions"
+			data-blapy-container-content="fnameOptionsFirstName"
+			data-blapy-update="json"
+			data-blapy-template-file="optionsTemplate.tpl"
+			data-blapy-template-wrap="<select name=&quot;firstname&quot; onChange=&quot;submitBlapyForm('#myForm');&quot;>"
+			data-blapy-template-init-purejson="0"
+			data-blapy-noblapydata="1"
+		>
+		</span>
+		<br>
+		Choose a lastname:
+		<!-- run the initialisation of the data from data-blapy-template-init -->
+		<span
+			id="fnameOptionsLastName"
+			data-blapy-container="true"
+			data-blapy-container-name="fnameOptions"
+			data-blapy-container-content="fnameOptionsLastName"
+			data-blapy-update="json"
+			data-blapy-template-init="optionvalues.json"
+		>
+			<input name="lastname" type="radio" value="{{lastname}}" {{selected}} onClick="submitBlapyForm('#myForm')">{{lastname}}</input>
+		</span>
+	</form>
+
+	<h1>Blapy Block results in a Table</h1>
+	<div id="results"
+			data-blapy-container="true"
+			data-blapy-container-name="results"
+			data-blapy-container-content="results"
+			data-blapy-update="json"
+			data-blapy-template-file="arrayvalues.json2html.tpl"
+			data-blapy-template-wrap="<table>"
+			data-blapy-template-init="arrayvalues.data"
+			data-blapy-noblapydata="1"
+		>
+	</div>
+</body>
+
+    <script type="module">
+        import Blapy2 from "../../src/index.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+			let blapy = document.querySelector("#myBlapy");
+
+			blapy.Blapy({
+				logLevel: 2,
+				debug: true
+			});
+
+			blapy.addEventListener("Blapy_ErrorOnPageChange", (event, error) => {
+				alert(error)
+			})
+		});
+
+		window.submitBlapyForm = function(formId) {
+    		document.querySelector(formId).dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+		}
+
+	$("body").append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()));
+</script>
+
+</html>
