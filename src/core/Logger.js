@@ -18,78 +18,82 @@
 
 
 export class Logger {
-    /**
-     * Initializes the logging service.
-     *
-     * @param {Object} options - Logger configuration.
-     * @param {boolean} options.debug - Enables or disables debug mode.
-     * @param {number} options.logLevel - Log level (1: error, 2: warning, 3: notice).
-     * @param {boolean} options.alertError - Displays an alert for errors.
-     */
-    constructor({
-        debug = false,
-        logLevel = 2,
-        alertError = false
-    } = {}) {
-        this.debug = false;
-        this.logLevel = 3;
-        this.alertError = alertError;
+  /**
+   * Initializes the logging service.
+   *
+   * @param {Object} options - Logger configuration.
+   * @param {boolean} options.debug - Enables or disables debug mode.
+   * @param {number} options.logLevel - Log level (1: error, 2: warning, 3: notice).
+   * @param {boolean} options.alertError - Displays an alert for errors.
+   */
+  constructor({
+                debug = false,
+                logLevel = 2,
+                alertError = false,
+              } = {}) {
+    this.debug = false;
+    this.logLevel = 3;
+    this.alertError = alertError;
+  }
+
+  /**
+   * Logs an error message (level 1).
+   *
+   * @param {string} message - The message to log.
+   * @param {string} [service] - The service originating the log.
+   */
+  error(message, service = "blapy") {
+    this.log(message, 1, service);
+  }
+
+  /**
+   * Logs a warning message (level 2).
+   *
+   * @param {string} message - The message to log.
+   * @param {string} [service] - The service originating the log.
+   */
+  warn(message, service = "blapy") {
+    this.log(message, 2, service);
+  }
+
+  /**
+   * Logs an informational message (level 3).
+   *
+   * @param {string} message - The message to log.
+   * @param {string} [service] - The service originating the log.
+   */
+  info(message, service = "blapy") {
+    this.log(message, 3, service);
+  }
+
+  /**
+   * Generic log method with a custom level.
+   * Compatible with the `_log` function from Blapy V1.
+   *
+   * @param {string} message - The message to log.
+   * @param {number} [errorLevel=3] - Error level (1: error, 2: warning, 3: notice).
+   * @param {string} [service] - The service originating the log.
+   */
+  log(message, errorLevel = 3, service = "blapy") {
+    if (errorLevel >= 2 && !this.debug) return;
+
+    if (
+      (typeof window !== "undefined" && window.console && window.console.log) ||
+      typeof console !== "undefined"
+    ) {
+      switch (errorLevel) {
+        case 1:
+          console.error(`[Blapy2] ${message} from ${service}`);
+          break;
+        case 2:
+          console.warn(`[Blapy2] ${message} from ${service}`);
+          break;
+        default:
+        case 3:
+          console.log(`[Blapy2] ${message} from ${service}`);
+          break;
+      }
     }
 
-    /**
-     * Logs an error message (level 1).
-     *
-     * @param {string} message - The message to log.
-     * @param {string} [service] - The service originating the log.
-     */
-    error(message, service = 'blapy') {
-        this.log(message, 1, service);
-    }
-
-    /**
-     * Logs a warning message (level 2).
-     *
-     * @param {string} message - The message to log.
-     * @param {string} [service] - The service originating the log.
-     */
-    warn(message, service = 'blapy') {
-        this.log(message, 2, service);
-    }
-
-    /**
-     * Logs an informational message (level 3).
-     *
-     * @param {string} message - The message to log.
-     * @param {string} [service] - The service originating the log.
-     */
-    info(message, service = 'blapy') {
-        this.log(message, 3, service);
-    }
-
-    /**
-     * Generic log method with a custom level.
-     * Compatible with the `_log` function from Blapy V1.
-     *
-     * @param {string} message - The message to log.
-     * @param {number} [errorLevel=3] - Error level (1: error, 2: warning, 3: notice).
-     * @param {string} [service] - The service originating the log.
-     */
-    log(message, errorLevel = 3, service = 'blapy') {
-        if (errorLevel >= 2 && !this.debug) return;
-
-        if (window.console && console.log) {
-            switch (errorLevel) {
-                case 1:
-                    console.error(`[Blapy2] ${message} from ${service}`);
-                    break;
-                case 2:
-                    console.warn(`[Blapy2] ${message} from ${service}`);
-                    break;
-                default:
-                case 3:
-                    console.log(`[Blapy2] ${message} from ${service}`);
-                    break;
-            }
-        }
-    }
+  }
 }
