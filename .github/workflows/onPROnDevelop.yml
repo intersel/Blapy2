@@ -1,0 +1,29 @@
+name: Vitest CI on Pull Request
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  run-vitest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Vitest
+        run: pnpm vitest run
