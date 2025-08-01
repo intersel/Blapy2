@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      vite-plugin-banner:
+        specifier: ^0.8.1
+        version: 0.8.1
     devDependencies:
       terser:
         specifier: ^5.43.1
@@ -493,6 +497,9 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
+  vite-plugin-banner@0.8.1:
+    resolution: {integrity: sha512-0+gGguHk3MH0HvzMSOCJC6fGgH4+jtY9KlKVZh+hwwE+PBkGVzY8xe657JL74vEgbeUJD37XjVqTrmve8XvZBQ==}
+
   vite@7.0.6:
     resolution: {integrity: sha512-MHFiOENNBd+Bd9uvc8GEsIzdkn1JxMmEeYX35tI3fv0sJBUTfW5tQsoaOwuY4KhBI09A3dUJ/DXf2yxPVPUceg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -958,6 +965,8 @@ snapshots:
       - terser
       - tsx
       - yaml
+
+  vite-plugin-banner@0.8.1: {}
 
   vite@7.0.6(terser@5.43.1):
     dependencies:
