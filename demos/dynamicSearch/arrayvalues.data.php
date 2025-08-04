@@ -12,7 +12,7 @@ $values=array(
 		array('firstname'=> "Alicia",'lastname'=> "Bootstrap"),
 		array('firstname'=> "Sylvester",'lastname'=> "Stallone"),
 );
-$action=empty($_REQUEST['action'])?'list':$_REQUEST['action'];
+$action=empty($_REQUEST['blapy_action'])?'list':$_REQUEST['blapy_action'];
 
 //when nothing in the search => list all values...
 $lastnameSearch = empty($_REQUEST['lastname'])? '':$_REQUEST['lastname'];

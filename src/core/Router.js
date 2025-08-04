@@ -109,9 +109,13 @@ export class Router {
                 return;
             }
 
+            console.log("test")
+
             event.preventDefault(); // Prevent native submission
 
             this.logger.info(`Form submitted: ${form.action}`, 'router');
+
+            console.log(form)
 
             // Extracting form data
             const formData = this._extractFormData(form, event);
@@ -121,6 +125,8 @@ export class Router {
             if (embeddingBlockId) {
                 formData.embeddingBlockId = embeddingBlockId;
             }
+
+            console.log(formData)
 
             // Déclenchement de l'événement Blapy
             this.blapy.myFSM.trigger('postData', {
@@ -195,7 +201,6 @@ export class Router {
         const cleanUrl = this._cleanBlapyUrl(url);
 
         // Déclenchement de l'événement approprié
-        console.log(cleanUrl)
         if (method === 'GET') {
             this.blapy.myFSM.trigger('loadUrl', {
                 aUrl: cleanUrl,
@@ -296,6 +301,7 @@ export class Router {
      * Extrait l'URL propre (sans hash)
      */
     _extractUrl(fullUrl) {
+        console.log(fullUrl)
         if (!fullUrl) return window.location.href;
 
         // Retirer la partie hash si présente

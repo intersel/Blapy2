@@ -17,12 +17,12 @@ include("header.php");
 							<p>Hey... this block was updated with Ajax!</p>
 							<p>Did you see that the content of "&lt;title&gt;" tag was changed? The "&lt;title&gt;" is a Blapy block too!<br> 
 							   The Url changed too... thanks to the use of the <a href="http://sammyjs.org/">Sammy library</a>.<br>
-							   Click on the <a href="index.php" data-blapy-link="true">"Hello world!"</a> link to load back its content...<br> 
+							   Click on the <a href="index.php" data-blapy-link>"Hello world!"</a> link to load back its content...<br>
 							  <?php if (!empty($_GET['id'])) echo "sent id: ".$_GET['id']?>
 							  </p>
 						</div>
 					</div>	
-					<p>Click on the <a href="index.php" data-blapy-link="true">"Hello world"</a> link, it will then change the Blapy content of the current page by the one coming from the page of this link</p>
+					<p>Click on the <a href="index.php" data-blapy-link>"Hello world"</a> link, it will then change the Blapy content of the current page by the one coming from the page of this link</p>
 
 <?php 
 include("footer.php");

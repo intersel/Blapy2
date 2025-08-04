@@ -31,9 +31,9 @@ export class Logger {
                 logLevel = 2,
                 alertError = false,
               } = {}) {
-    this.debug = false;
-    this.logLevel = 3;
-    this.alertError = alertError;
+    this.debug = false
+    this.logLevel = 3
+    this.alertError = alertError
   }
 
   /**
@@ -42,8 +42,8 @@ export class Logger {
    * @param {string} message - The message to log.
    * @param {string} [service] - The service originating the log.
    */
-  error(message, service = "blapy") {
-    this.log(message, 1, service);
+  error(message, service = 'blapy') {
+    this.log(message, 1, service)
   }
 
   /**
@@ -52,8 +52,8 @@ export class Logger {
    * @param {string} message - The message to log.
    * @param {string} [service] - The service originating the log.
    */
-  warn(message, service = "blapy") {
-    this.log(message, 2, service);
+  warn(message, service = 'blapy') {
+    this.log(message, 2, service)
   }
 
   /**
@@ -62,8 +62,8 @@ export class Logger {
    * @param {string} message - The message to log.
    * @param {string} [service] - The service originating the log.
    */
-  info(message, service = "blapy") {
-    this.log(message, 3, service);
+  info(message, service = 'blapy') {
+    this.log(message, 3, service)
   }
 
   /**
@@ -74,24 +74,26 @@ export class Logger {
    * @param {number} [errorLevel=3] - Error level (1: error, 2: warning, 3: notice).
    * @param {string} [service] - The service originating the log.
    */
-  log(message, errorLevel = 3, service = "blapy") {
-    if (errorLevel >= 2 && !this.debug) return;
+  log(message, errorLevel = 3, service = 'blapy') {
+    if (errorLevel >= 2 && !this.debug) return
 
     if (
-      (typeof window !== "undefined" && window.console && window.console.log) ||
-      typeof console !== "undefined"
+      (typeof window !== 'undefined' && window.console?.log) ||
+      typeof console !== 'undefined'
     ) {
       switch (errorLevel) {
         case 1:
-          console.error(`[Blapy2] ${message} from ${service}`);
-          break;
+          console.error(`[Blapy2] ${message} from ${service}`)
+          break
         case 2:
-          console.warn(`[Blapy2] ${message} from ${service}`);
-          break;
-        default:
+          console.warn(`[Blapy2] ${message} from ${service}`)
+          break
         case 3:
-          console.log(`[Blapy2] ${message} from ${service}`);
-          break;
+          console.log(`[Blapy2] ${message} from ${service}`)
+          break
+        default:
+          console.log(`[Blapy2] ${message} from ${service}`)
+          break
       }
     }
 

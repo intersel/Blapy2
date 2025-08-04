@@ -13,7 +13,7 @@ include("header.php");
 
 		<h1>Hello World!</h1>
 		<p>This "div" block is a Blapy content.</p>
-		<p> Click on the <a href="helloworld_2.php" data-blapy-link="true">"How is it going?"</a> link,
+		<p> Click on the <a href="helloworld_2.php" data-blapy-link>"How is it going?"</a> link,
 			it will then change the Blapy content of the current page by the one coming from the page of this link</p>
 		<p>In this demo, the Blapy block is this div with the green border.</p>
 

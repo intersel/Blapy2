@@ -2,61 +2,68 @@
 <!-- To run the current sample code in your own environment, copy this to an html page. -->
 <html>
 <head>
-	<title>Json Example - Search on a table</title>
-	<meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
-	<link rel="stylesheet" href="main.css" />
-	<script type="text/javascript" src="../../extlib/jquery.js"></script>
-	<script type="text/javascript" src="../../extlib/sammy/lib/sammy.js"></script>
-	<script type="text/javascript" src="../../extlib/iFSM/extlib/jquery.dotimeout.js"></script>
-	<script type="text/javascript" src="../../extlib/iFSM/extlib/jquery.attrchange.js"></script>
-	<script type="text/javascript" src="../../extlib/iFSM/iFSM.js"></script>
-	<script type="text/javascript" src="../../extlib/json2html/json2html.js"></script>
-	<script type="text/javascript" src="../../extlib/json5/index.min.js"></script>
+  <title>Json Example - Search on a table</title>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+  <link rel="stylesheet" href="main.css" />
+  <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
+  <script src="../../lib/mustache/mustache.js"></script>
+  <script src="../../lib/navigo/index.js"></script>
+  <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
+  <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+  <script src="../../lib/json5/index.min.js"></script>
+  <script src="../../lib/iFSM/iFSM.js"></script>
+  <script type="text/javascript" src="../../lib/json2html/json2html.js"></script>
 </head>
 <body id="myBlapy">
-	<h1>Search values in an ajax way with the json feature of Blapy </h1>
-	<p>Fill the following form:</p>
-	<form id="myForm" action="arrayvalues.data.php" data-blapy-link="true" method="POST">
-		<input type="hidden" name="action" value="search">
-		Choose a firstname:
-		<input  name="firstname" onKeyup="$('#myForm').submit();">
-		<br>
-		Choose a lastname:
-		<input name="lastname" type="text" onKeyup="$('#myForm').submit();"></input>
-	</form>
+<h1>Search values in an ajax way with the json feature of Blapy </h1>
+<p>Fill the following form:</p>
+<form id="myForm" action="arrayvalues.data.php" data-blapy-link method="POST">
+  <input type="hidden" name="blapy_action" value="search">
+  Choose a firstname:
+  <input name="firstname" onKeyup="submitBlapyForm('myForm')">
+  <br>
+  Choose a lastname:
+  <input name="lastname" type="text" onKeyup="submitBlapyForm('myForm')"></input>
+</form>
 
-	<h1>Blapy Block results in a Table</h1>
-	<div id="results"
-			data-blapy-container="true"
-			data-blapy-container-name="results"
-			data-blapy-container-content="results"
-			data-blapy-update="json"
-			data-blapy-template-file="arrayvalues.tpl"
-			data-blapy-template-wrap="<table>"
-			data-blapy-template-header="<tr><th>First name</th><th>Name</th></tr>"
-			data-blapy-template-footer="<tr><th>First name</th><th>Name</th></tr>"
-			data-blapy-template-init="arrayvalues.data.php"
-			data-blapy-template-init-params="{'action':'init'}"
-		>
-	</div>
+<h1>Blapy Block results in a Table</h1>
+<div id="results"
+     data-blapy-container="true"
+     data-blapy-container-name="results"
+     data-blapy-container-content="results"
+     data-blapy-update="json"
+     data-blapy-template-file="arrayvalues.tpl"
+     data-blapy-template-wrap="<table>"
+     data-blapy-template-header="<tr><th>First name</th><th>Name</th></tr>"
+     data-blapy-template-footer="<tr><th>First name</th><th>Name</th></tr>"
+     data-blapy-template-init="arrayvalues.data.php"
+     data-blapy-template-init-params="{'action':'init'}"
+>
+</div>
 </body>
 
-<script type="text/javascript" src="../../Blapy.js"></script>
-<script type="text/javascript" src="../../Blapy_AnimationPlugins.js"></script>
+<script type="text/javascript" src="../../dist/blapy2.js"></script>
 <script>
-	$( document ).ready(function() {
 
-		//start Blapy
-		$('#myBlapy').Blapy();
+  document.addEventListener("DOMContentLoaded", () => {
+    let myBlapy = document.querySelector("#myBlapy").Blapy();
+  })
+  // $(document).ready(function() {
+  //
+  //
+  //   //catch errors
+  //   $('#myBlapy').on('Blapy_ErrorOnPageChange', function(event, anError) {
+  //     alert('Blapy error: ' + anError)
+  //   })
+  //
+  // })
+  window.submitBlapyForm = function(formId) {
+    document.getElementById(formId).dispatchEvent(
+      new Event('submit', {bubbles: true, cancelable: true})
+    );
+  };
 
-		//catch errors
-		$( "#myBlapy" ).on( "Blapy_ErrorOnPageChange", function(event,anError) {
-			  alert( 'Blapy error: '+anError );
-			});
-
-	});
-
-	$("body").append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()));
+  $('body').append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()))
 </script>
 
 </html>
