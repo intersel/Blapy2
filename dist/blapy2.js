@@ -11,7 +11,7 @@
  * @fileoverview Blapy2 runtime for browser usage, including Blapy V1 compatibility.
  * @see {@link https://github.com/intersel/blapy2}
  * @author Corentin NELHOMME - corentin.nelhomme@intersel.fr
- * @version 1.0.0
+ * @version 2.0.0
  * @license DonationWare - see https://github.com/intersel/blapy2/blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  */
