@@ -132,16 +132,6 @@
 
   })
 
-  $(document).ready(function() {
-
-
-    //catch errors
-    $('#myBlapy').on('Blapy_ErrorOnPageChange', function(event, anError) {
-      alert('Blapy error: ' + anError)
-    })
-
-  })
-
   // function that will modify the received json data
   window.ShouldNinaTalk = function(aJsonData) {
     aJsonData = aJsonData.map(aData => {
@@ -158,7 +148,14 @@
     return aJsonData
   }
 
-  $('body').append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()))
+  const h3 = document.createElement('h3')
+h3.textContent = 'HTML code of the page'
+
+const pre = document.createElement('pre')
+pre.textContent = document.documentElement.outerHTML
+
+document.body.appendChild(h3)
+document.body.appendChild(pre)
 </script>
 
 </html>

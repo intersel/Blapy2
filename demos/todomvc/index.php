@@ -71,6 +71,31 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#myBlapy').Blapy({ enableRouter: true })
+
+    var oriVal
+    $(document).on('dblclick', '#todo-list label', function() {
+      oriVal = $(this).text()
+      $(this).text('')
+      $('<input type=\'text\' style=\'font-size:22px\'>').appendTo(this).val(oriVal).focus()
+    })
+    $(document).on('keypress', '#todo-list label > input', function(event) {
+      if (event.which == 13) {
+        event.preventDefault()
+        $(this).trigger('focusout')
+      }
+    })
+
+    $(document).on('focusout', '#todo-list label > input', function() {
+      var $this = $(this)
+      var newText = $this.val() || oriVal
+      var actionId = $this.parent().attr('data-id')
+      $this.parent().text(newText)
+      $('#myBlapy').trigger('postData', {
+        aUrl: 'php/editAction.php',
+        params: { actionName: newText, actionId: actionId },
+      })
+      $this.remove() // Don't just hide, remove the element.
+    })
   })
 
   // $(document).ready(function() {
@@ -85,30 +110,7 @@
   //     alert('Blapy error: ' + anError)
   //   })
   //
-  //   var oriVal
-  //   $(document).on('dblclick', '#todo-list label', function() {
-  //     oriVal = $(this).text()
-  //     $(this).text('')
-  //     $('<input type=\'text\' style=\'font-size:22px\'>').appendTo(this).val(oriVal).focus()
-  //   })
-  //   $(document).on('keypress', '#todo-list label > input', function(event) {
-  //     if (event.which == 13) {
-  //       event.preventDefault()
-  //       $(this).trigger('focusout')
-  //     }
-  //   })
-  //
-  //   $(document).on('focusout', '#todo-list label > input', function() {
-  //     var $this = $(this)
-  //     var newText = $this.val() || oriVal
-  //     var actionId = $this.parent().attr('data-id')
-  //     $this.parent().text(newText)
-  //     $('#myBlapy').trigger('postData', {
-  //       aUrl: 'php/editAction.php',
-  //       params: { actionName: newText, actionId: actionId },
-  //     })
-  //     $this.remove() // Don't just hide, remove the element.
-  //   })
+
   //
   // })
 

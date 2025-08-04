@@ -45,25 +45,30 @@
 <script type="text/javascript" src="../../dist/blapy2.js"></script>
 <script>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    let myBlapy = document.querySelector("#myBlapy").Blapy();
+  document.addEventListener('DOMContentLoaded', () => {
+    let myBlapy = document.querySelector('#myBlapy')
+
+    myBlapy.Blapy();
+
+    myBlapy.addEventListener("Blapy_ErrorOnPageChange", (e, error) => {
+          alert('Blapy error: ' + error)
+    })
   })
-  // $(document).ready(function() {
-  //
-  //
-  //   //catch errors
-  //   $('#myBlapy').on('Blapy_ErrorOnPageChange', function(event, anError) {
-  //     alert('Blapy error: ' + anError)
-  //   })
-  //
-  // })
+
   window.submitBlapyForm = function(formId) {
     document.getElementById(formId).dispatchEvent(
-      new Event('submit', {bubbles: true, cancelable: true})
-    );
-  };
+      new Event('submit', { bubbles: true, cancelable: true }),
+    )
+  }
 
-  $('body').append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()))
+  const h3 = document.createElement('h3')
+  h3.textContent = 'HTML code of the page'
+
+  const pre = document.createElement('pre')
+  pre.textContent = document.documentElement.outerHTML
+
+  document.body.appendChild(h3)
+  document.body.appendChild(pre)
 </script>
 
 </html>

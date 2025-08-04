@@ -30,41 +30,29 @@
       console.log("tt")
     })
 
+    mainContainer.addEventListener("Blapy_beforeContentChange", () => {
+      //alert( 'Blapy_beforeContentChange' +$(this).html() );
+    })
+
+    mainContainer.addEventListener("Blapy_doCustomChange", (e, container) => {
+      // 		  $("#mainContainer").animate({opacity:0},{duration:200, complete	: function(){
+      // 			  $(aBlapyContainer).css({opacity:0});
+      // 			  $("#mainContainer").replaceWith(aBlapyContainer);//replace content with the new one
+      // 			  $("#mainContainer").animate({opacity:1},{duration:200});
+      // 		  }});
+    })
+
 
   })
 
-  // $( document ).ready(function() {
-  //
-  // 	//start Blapy
-  // 	$('#myBlapy').Blapy({activeSammy:true});
-  //
-  // 	//catch errors
-  // 	$( "#myBlapy" ).on( "Blapy_ErrorOnPageChange", function(event,anError) {
-  // 		  alert( anError );
-  // 		});
-  //
-  // 	//this way to apply the event binding will assure we get event when DOM changed
-  // 	$(document).on( "Blapy_beforeContentChange","#mainContainer", function(event,previousObject) {
-  // 		  //alert( 'Blapy_beforeContentChange' +$(this).html() );
-  // 		});
-  // 	$( document ).on( "Blapy_doCustomChange","#mainContainer", function(event,aBlapyContainer) {
-  // 		  //alert( 'Blapy_doCustomChange'+$(this).html() );
-  // 		  $("#mainContainer").animate({opacity:0},{duration:200, complete	: function(){
-  // 			  $(aBlapyContainer).css({opacity:0});
-  // 			  $("#mainContainer").replaceWith(aBlapyContainer);//replace content with the new one
-  // 			  $("#mainContainer").animate({opacity:1},{duration:200});
-  // 		  }});
-  // 		});
-  // 	$(document).on( "Blapy_afterContentChange","#mainContainer", function(event,previousObject) {
-  // 		  //alert( 'Blapy_afterContentChange' +$(this).html() );
-  // 		});
-  // 	$( "#myBlapy" ).on( "Blapy_beforePageLoad", function(event,data) {
-  // 		  //alert( 'Blapy_beforePageLoad:' +data.aUrl );
-  // 		});
-  //
-  // });
+  const h3 = document.createElement('h3')
+h3.textContent = 'HTML code of the page'
 
-  $('body').append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()))
+const pre = document.createElement('pre')
+pre.textContent = document.documentElement.outerHTML
+
+document.body.appendChild(h3)
+document.body.appendChild(pre)
 </script>
 
 </html>
