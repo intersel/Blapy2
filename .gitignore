@@ -3,3 +3,5 @@ node_modules/**
 docker-compose.yml
 .idea/**
 dist/**
+test-results/**
+CLAUDE.md

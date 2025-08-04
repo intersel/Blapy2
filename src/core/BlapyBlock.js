@@ -23,16 +23,16 @@ export class BlapyBlock {
     /**
      * Constructor of the BlapyBlocks class.
      *
-     * Initializes a BlapyBlocks instance with its properties based on the data attributes 
+     * Initializes a BlapyBlocks instance with its properties based on the data attributes
      * of the provided HTML element.
      *
      * @constructor
-     * @param {HTMLElement} element - The HTML DOM element representing the Blapy block.
      * @param {Logger} logger - The logger instance for managing debug and error messages.
      *
+     * @param {templateManager} templateManager - The template manager instance
      * @example
      * // HTML element with required data attributes
-     * // <div id="myBlock" 
+     * // <div id="myBlock"
      * //      data-blapy-container-name="userList"
      * //      data-blapy-update="refresh"
      * //      data-blapy-container-content="users"
@@ -41,14 +41,12 @@ export class BlapyBlock {
      * const element = document.getElementById('myBlock');
      * const blapyBlock = new BlapyBlocks(element, logger);
      */
-    constructor(logger, templateManager, ajaxService) {
+    constructor(logger, templateManager) {
         this.logger = logger;
         this.templateManager = templateManager;
-        this.ajaxService = ajaxService;
         this.blocks = new Map();
         this.intervalsSet = new Map();
-        this.visibilityObserver = null;
-        this.blapy = null; // Holds a reference to the main Blapy instance
+        this.blapy = null;
 
         this.logger.info('BlapyBlocks initialized', 'blocks');
     }

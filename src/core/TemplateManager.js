@@ -18,12 +18,12 @@
 export class TemplateManager {
     /**
      * Creates a new instance of the class.
-     * 
-     * Initializes the logger, AJAX service, utility functions, 
+     *
+     * Initializes the logger, AJAX service, utility functions,
      * template storage
-     * 
+     *
      * @constructor
-     * 
+     *
      * @param {Logger} logger - The logging service instance.
      * @param {AjaxService} ajaxService - The AJAX service for data requests.
      * @param {Utils} utils - Utility functions used across the class.
@@ -38,14 +38,14 @@ export class TemplateManager {
 
     /**
      * Loads and initializes a JSON template into a Blapy container.
-     * 
+     *
      * @async
      * @function setBlapyContainerJsonTemplate
-     * 
+     *
      * @param {HTMLElement} container - The container element where the template will be applied.
      * @param {Blapy} blapy - The Blapy instance managing the container.
      * @param {boolean} [forceReload=false] - Whether to force the template reload.
-     * 
+     *
      * @returns {Promise<void>} Resolves when the template is successfully initialized.
      */
     async setBlapyContainerJsonTemplate(container, blapy, forceReload = false) {
@@ -161,14 +161,14 @@ export class TemplateManager {
                 objects = objects.concat(this.getObjects(obj[i], key, val));
             } else
                 //if key matches and value matches or if key matches and value is not passed (eliminating the case where key matches but passed value does not)
-                if (i == key && obj[i] == val || i == key && val == '') { //
+            if (i == key && obj[i] == val || i == key && val == '') { //
+                objects.push(obj);
+            } else if (obj[i] == val && key == '') {
+                //only add if the object is not already in the array
+                if (objects.lastIndexOf(obj) == -1) {
                     objects.push(obj);
-                } else if (obj[i] == val && key == '') {
-                    //only add if the object is not already in the array
-                    if (objects.lastIndexOf(obj) == -1) {
-                        objects.push(obj);
-                    }
                 }
+            }
         }
         return objects;
     }
@@ -324,15 +324,15 @@ export class TemplateManager {
 
     /**
      * Extracts and parses JSON data from the given containers.
-     * 
+     *
      * @async
      * @private
      * @function _extractAndParseJsonData
-     * 
+     *
      * @param {*} tmpContainer - A temporary container that may contain encoded JSON data.
      * @param {HTMLElement} aBlapyContainer - The Blapy container with JSON or HTML data.
      * @param {*} jsonFeatures - A JSON parser (e.g., JSON or JSON5).
-     * 
+     *
      * @returns {Promise<*>} The parsed JSON object, or `null` if parsing fails.
      */
     async _extractAndParseJsonData(tmpContainer, aBlapyContainer, jsonFeatures) {
@@ -367,59 +367,59 @@ export class TemplateManager {
 
     /**
      * Parses JSON data with a retry mechanism in case of parsing failure.
-     * 
+     *
      * @private
      * @function _parseJsonWithRetry
-     * 
+     *
      * @param {string} jsonData - The raw JSON string to parse.
      * @param {*} jsonFeatures - A JSON parser (e.g., JSON or JSON5).
-     * 
+     *
      * @returns {*} The parsed JSON object, or throws an error if parsing fails.
-     * 
+     *
      * @throws {Error} Throws an error if the JSON cannot be parsed after retry.
 
 
-    _parseJsonWithRetry(jsonData, jsonFeatures) {
-        this.logger.info("_parseJsonWithRetry", "templateManager")
-        try {
-            const jsonDataObj = jsonFeatures.parse(jsonData);
-            return this._extractBlapyData(jsonDataObj);
-        } catch (e) {
-            this.logger.warn(
-                "downloaded content can not be evaluated, so is not json data:" +
-                jsonData,
-                "templateManager",
-            );
+     _parseJsonWithRetry(jsonData, jsonFeatures) {
+     this.logger.info("_parseJsonWithRetry", "templateManager")
+     try {
+     const jsonDataObj = jsonFeatures.parse(jsonData);
+     return this._extractBlapyData(jsonDataObj);
+     } catch (e) {
+     this.logger.warn(
+     "downloaded content can not be evaluated, so is not json data:" +
+     jsonData,
+     "templateManager",
+     );
 
 
-            try {
-                const cleanedData = jsonData.replace(/(\r\n|\n|\r)/g, "");
-                const jsonDataObj = jsonFeatures.parse(cleanedData);
-                this.logger.info(
-                    "use of sub text to get json data: " + cleanedData,
-                    "templateManager",
-                );
-                return this._extractBlapyData(jsonDataObj);
-            } catch (e2) {
-                this.logger.error(
-                    "try the subtext but content can not be evaluated either, so is not json data: " +
-                    jsonData,
-                    "templateManager",
-                );
-                throw new Error("Parsing JSON impossible");
-            }
-        }
-    }
-    */
+     try {
+     const cleanedData = jsonData.replace(/(\r\n|\n|\r)/g, "");
+     const jsonDataObj = jsonFeatures.parse(cleanedData);
+     this.logger.info(
+     "use of sub text to get json data: " + cleanedData,
+     "templateManager",
+     );
+     return this._extractBlapyData(jsonDataObj);
+     } catch (e2) {
+     this.logger.error(
+     "try the subtext but content can not be evaluated either, so is not json data: " +
+     jsonData,
+     "templateManager",
+     );
+     throw new Error("Parsing JSON impossible");
+     }
+     }
+     }
+     */
 
     /**
      * Extracts Blapy-specific data from a JSON object if present.
-     * 
+     *
      * @private
      * @function _extractBlapyData
-     * 
+     *
      * @param {Object} jsonDataObj - The parsed JSON object.
-     * 
+     *
      * @returns {Object|null} The `blapy-data` object if found, otherwise the original JSON object or `null` if the container name does not match.
      */
     _extractBlapyData(jsonDataObj, container = null) {
@@ -444,14 +444,14 @@ export class TemplateManager {
 
     /**
      * Applies transformations (filters, properties, and custom functions) to the JSON data.
-     * 
+     *
      * @private
      * @function _applyDataTransformations
-     * 
+     *
      * @param {Object|Array} jsonDataObj - The parsed JSON data to transform.
      * @param {HTMLElement} myContainer - The container element with transformation attributes.
      * @param {*} jsonFeatures - A JSON parser (e.g., JSON or JSON5).
-     * 
+     *
      * @returns {Object|Array} The transformed JSON data with applied filters and indices.
      */
     _applyDataTransformations(jsonDataObj, myContainer, jsonFeatures) {
@@ -472,13 +472,13 @@ export class TemplateManager {
 
     /**
      * Applies the `data-blapy-template-init-fromproperty` filter to extract a nested property from the JSON data.
-     * 
+     *
      * @private
      * @function _applyInitFromProperty
-     * 
+     *
      * @param {Object} jsonDataObj - The JSON data object to filter.
      * @param {HTMLElement} myContainer - The container element with the `data-blapy-template-init-fromproperty` attribute.
-     * 
+     *
      * @returns {Object|Array} The extracted property value or the original JSON data if no matching property is found.
      */
     _applyInitFromProperty(jsonDataObj, myContainer) {
@@ -520,13 +520,13 @@ export class TemplateManager {
 
     /**
      * Applies the `data-blapy-template-init-search` filter to search and filter elements in the JSON data.
-     * 
+     *
      * @private
      * @function _applyInitSearch
-     * 
+     *
      * @param {Object|Array} jsonDataObj - The JSON data to filter.
      * @param {HTMLElement} myContainer - The container element with the `data-blapy-template-init-search` attribute.
-     * 
+     *
      * @returns {Object|Array} A filtered list of JSON objects or the original data if no matches are found.
      */
     _applyInitSearch(jsonDataObj, myContainer) {
@@ -576,16 +576,16 @@ export class TemplateManager {
     }
 
     /**
-     * Applies custom data processing functions defined in the 
+     * Applies custom data processing functions defined in the
      * `data-blapy-template-init-processdata` attribute to the JSON data.
-     * 
+     *
      * @private
      * @function _applyProcessDataFunctions
-     * 
+     *
      * @param {Object|Array} jsonDataObj - The JSON data to process.
      * @param {HTMLElement} myContainer - The container element with the `data-blapy-template-init-processdata` attribute.
      * @param {*} jsonFeatures - A JSON parser (e.g., JSON or JSON5).
-     * 
+     *
      * @returns {Object|Array} The processed JSON data, or the original data if no valid processing function is applied.
      */
     _applyProcessDataFunctions(jsonDataObj, myContainer, jsonFeatures) {
@@ -638,14 +638,14 @@ export class TemplateManager {
     }
 
     /**
-     * Adds Blapy-specific index properties (`blapyIndex`, `blapyFirst`, `blapyLast`) 
+     * Adds Blapy-specific index properties (`blapyIndex`, `blapyFirst`, `blapyLast`)
      * to each element of the JSON data for template rendering.
-     * 
+     *
      * @private
      * @function _addBlapyIndices
-     * 
+     *
      * @param {Object|Array} jsonDataObj - The JSON data to which indices will be added.
-     * 
+     *
      * @returns {Object|Array} The JSON data with added Blapy index properties.
      */
     _addBlapyIndices(jsonDataObj) {
@@ -666,12 +666,12 @@ export class TemplateManager {
 
     /**
      * Retrieves the HTML template from the specified container.
-     * 
+     *
      * @private
      * @function _getTemplate
-     * 
+     *
      * @param {HTMLElement} myContainer - The container element containing the template(s).
-     * 
+     *
      * @returns {{content: string, allTemplates: NodeList}|null} An object with the template content and all found templates, or `null` if none are found.
      */
     _getTemplate(myContainer) {
@@ -732,14 +732,14 @@ export class TemplateManager {
 
     /**
      * Generates the final HTML from the given JSON data and template.
-     * 
+     *
      * @private
      * @function _generateHtml
-     * 
+     *
      * @param {Object|Array} jsonDataObj - The JSON data used to populate the template.
      * @param {{content: string, allTemplates: NodeList}} template - The template object containing HTML content.
      * @param {HTMLElement} myContainer - The container element holding template configuration.
-     * 
+     *
      * @returns {string} The generated HTML string.
      */
     _generateHtml(jsonDataObj, template, myContainer) {
@@ -810,12 +810,12 @@ export class TemplateManager {
 
     /**
      * Prepares and cleans the template content by replacing specific placeholder tags.
-     * 
+     *
      * @private
      * @function _prepareTemplateContent
-     * 
+     *
      * @param {string} content - The raw template content to prepare.
-     * 
+     *
      * @returns {string} The cleaned and ready-to-use template content.
      */
     _prepareTemplateContent(content) {
@@ -827,13 +827,13 @@ export class TemplateManager {
 
     /**
      * Injects the generated HTML into the container, applying optional header, footer, and wrapper templates.
-     * 
+     *
      * @private
      * @function _injectFinalHtml
-     * 
+     *
      * @param {string} generatedHtml - The final HTML string to inject.
      * @param {HTMLElement} myContainer - The container element where the HTML will be inserted.
-     * 
+     *
      * @returns {void} This function does not return a value.
      */
     _injectFinalHtml(generatedHtml, myContainer, blapy, template) {
@@ -865,15 +865,31 @@ export class TemplateManager {
         let tplList = "";
         if (template && template.allTemplates) {
             template.allTemplates.forEach((el) => {
-                tplList += el.outerHTML;
+                // Nettoyer le template en gardant seulement la structure originale
+                const cleanTemplate = el.cloneNode(true);
+
+                // Si c'est un template avec un ID, ne garder que le template original
+                if (cleanTemplate.hasAttribute('data-blapy-container-tpl-id')) {
+                    // Restaurer le contenu original du template
+                    const originalContent = cleanTemplate.getAttribute('data-original-content');
+                    if (originalContent) {
+                        cleanTemplate.innerHTML = originalContent;
+                    } else {
+                        // Si pas de contenu original sauvé, extraire le template pattern
+                        const content = cleanTemplate.innerHTML;
+                        // Garder seulement les templates avec des placeholders {{}}
+                        if (content.includes('{{') && content.includes('}}')) {
+                            cleanTemplate.innerHTML = content.replace(/^.*?(<.*?\{\{.*?\}\}.*?>.*?)$/s, '$1');
+                        }
+                    }
+                }
+                tplList += cleanTemplate.outerHTML;
             });
         }
 
-        // ✅ PROBLÈME ICI - les templates sont mélangés avec le contenu généré
-        console.log(`💉 tplList:`, tplList);
+        console.log(`💉 tplList (cleaned):`, tplList);
         console.log(`💉 newHtml:`, newHtml);
 
-        // ✅ SOLUTION : Séparer clairement les templates du contenu
         myContainer.innerHTML = tplList + newHtml;
 
         console.log(`💉 Final innerHTML:`, myContainer.innerHTML);
