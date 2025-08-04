@@ -2,109 +2,119 @@
 <!-- To run the current sample code in your own environment, copy this to an html page. -->
 <html>
 <head>
-	<title>Json Example</title>
-	<meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
-	<link rel="stylesheet" href="main.css" />
-	<script type="text/javascript" src="../../extlib/jquery.js"></script>
-	<script type="text/javascript" src="../../extlib/json5/index.min.js"></script>
-	<script type="text/javascript" src="../../extlib/sammy/lib/sammy.js"></script>
-	<script type="text/javascript" src="../../extlib/iFSM/extlib/jquery.dotimeout.js"></script>
-	<script type="text/javascript" src="../../extlib/iFSM/extlib/jquery.attrchange.js"></script>
-	<script type="text/javascript" src="../../extlib/iFSM/iFSM.js"></script>
-	<script type="text/javascript" src="../../extlib/mustache/3.0.1/mustache.js"></script>
+  <title>Json Example</title>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+  <link rel="stylesheet" href="main.css" />
+  <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
+  <script src="../../lib/mustache/mustache.js"></script>
+  <script src="../../lib/navigo/index.js"></script>
+  <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
+  <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+  <script src="../../lib/json5/index.min.js"></script>
+  <script src="../../lib/iFSM/iFSM.js"></script>
+  <script type="text/javascript" src="../../lib/json2html/json2html.js"></script>
 </head>
 <body id="myBlapy">
-	<h1>Blapy demos using json data  and Mustache Templating engine (2)</h1>
-	<p>Form calls pure json and "results" block is updated with the "data-blapy-embedding-blockid" feature</p>
-	<p>Other demos:
-		<ul>
-			<li><a href="index.html">Update "results" block with standard Blapy blocks with json inside</a></li>
-			<li><a href="index-purejson.html">Update of "results" block using "updateBlock" blapy event</a></li>
-		</ul>
-	</p>
-	<h1>Select values with the json feature of Blapy </h1>
-	<p>Fill the following form:</p>
-	<form id="myForm"
-				action="testForm.php?pureJson=1"
-				data-blapy-link
-				method="POST"
-				data-blapy-noblapydata="1"
-				data-blapy-embedding-blockid="results">
-		Choose a firstname:
-		<span
-			id="fnameOptionsFirstName"
-			data-blapy-container="true"
-			data-blapy-container-name="fnameOptions"
-			data-blapy-container-content="fnameOptionsFirstName"
-			data-blapy-update="json"
-			data-blapy-template-file="optionsTemplate.tpl"
-			data-blapy-template-wrap='<select name="firstname" onChange="$(&#39;#myForm&#39;).submit();">'
-		>
+<h1>Blapy demos using json data and Mustache Templating engine (2)</h1>
+<p>Form calls pure json and "results" block is updated with the "data-blapy-embedding-blockid" feature</p>
+<p>Other demos:
+<ul>
+  <li><a href="index.html">Update "results" block with standard Blapy blocks with json inside</a></li>
+  <li><a href="index-purejson.html">Update of "results" block using "updateBlock" blapy event</a></li>
+</ul>
+</p>
+<h1>Select values with the json feature of Blapy </h1>
+<p>Fill the following form:</p>
+<form id="myForm"
+      action="testForm.php?pureJson=1"
+      data-blapy-link
+      method="POST"
+      data-blapy-noblapydata="1"
+      data-blapy-embedding-blockid="results">
+  Choose a firstname:
+  <span
+    id="fnameOptionsFirstName"
+    data-blapy-container="true"
+    data-blapy-container-name="fnameOptions"
+    data-blapy-container-content="fnameOptionsFirstName"
+    data-blapy-update="json"
+    data-blapy-template-file="optionsTemplate.tpl"
+    data-blapy-template-wrap="<select name=&quot;firstname&quot; onChange=&quot;submitBlapyForm('myForm');&quot;>"
+  >
 		</span>
-		<br>
-		Choose a lastname:
-		<span
-			id="fnameOptionsLastName"
-			data-blapy-container="true"
-			data-blapy-container-name="fnameOptions"
-			data-blapy-container-content="fnameOptionsLastName"
-			data-blapy-update="json"
-			data-blapy-template-init="optionvalues.json"
-		>
-			<input name="lastname" type="radio" value="{{lastname}}" {{selected}} onClick="$('#myForm').submit();">{{lastname}}</input>
+  <br>
+  Choose a lastname:
+  <span
+    id="fnameOptionsLastName"
+    data-blapy-container="true"
+    data-blapy-container-name="fnameOptions"
+    data-blapy-container-content="fnameOptionsLastName"
+    data-blapy-update="json"
+    data-blapy-template-init="optionvalues.json"
+  >
+			<input name="lastname" type="radio" value="{{lastname}}" {{selected}} onClick="submitBlapyForm('myForm')">{{lastname}}</input>
 		</span>
-	</form>
+</form>
 
-	<h1>Blapy Block results in a Table</h1>
-	<div id="results"
-			data-blapy-container="true"
-			data-blapy-container-name="results"
-			data-blapy-container-content="results"
-			data-blapy-update="json"
-			data-blapy-template-file="arrayvalues.tpl"
-			data-blapy-template-wrap="<table>"
-			data-blapy-template-init="arrayvalues.data"
-			data-blapy-template-init-processdata="setColorToData"
-			data-blapy-template-init-purejson="1"
-		>
-	</div>
+<h1>Blapy Block results in a Table</h1>
+<div id="results"
+     data-blapy-container="true"
+     data-blapy-container-name="results"
+     data-blapy-container-content="results"
+     data-blapy-update="json"
+     data-blapy-template-file="arrayvalues.tpl"
+     data-blapy-template-wrap="<table>"
+     data-blapy-template-init="arrayvalues.data"
+     data-blapy-template-init-processdata="setColorToData"
+     data-blapy-template-init-purejson="1"
+>
+</div>
 </body>
 
-<script type="text/javascript" src="../../Blapy.js"></script>
-<script type="text/javascript" src="../../Blapy_AnimationPlugins.js"></script>
+<script type="text/javascript" src="../../dist/blapy2.js"></script>
 <script>
-	$( document ).ready(function() {
 
-		//start Blapy
-		$('#myBlapy').Blapy();
+  document.addEventListener("DOMContentLoaded", () => {
+    let myBlapy = document.querySelector("#myBlapy");
+    myBlapy.Blapy()
+  })
 
-		//catch errors
-		$( "#myBlapy" ).on( "Blapy_ErrorOnPageChange", function(event,anError) {
-			  alert( 'Blapy error: '+anError );
-			});
+  window.submitBlapyForm = function(formId) {
+    document.getElementById(formId).dispatchEvent(
+      new Event('submit', {bubbles: true, cancelable: true})
+    );
+  };
+  // $(document).ready(function() {
+  //
+  //   //start Blapy
+  //   $('#myBlapy').Blapy()
+  //
+  //   //catch errors
+  //   $('#myBlapy').on('Blapy_ErrorOnPageChange', function(event, anError) {
+  //     alert('Blapy error: ' + anError)
+  //   })
+  //
+  //   window.setColorToData = function(aJson) {
+  //     var aJsonArray = []
+  //     if (!Array.isArray(aJson))
+  //       aJsonArray[0] = aJson
+  //     else
+  //       aJsonArray = aJson
+  //
+  //     aJson = aJsonArray.map((aData) => {
+  //       if (aData.firstname == 'John') aData['colorFirstName'] = 'green'
+  //       else aData['colorFirstName'] = 'blue'
+  //       if (aData.lastname == 'Rabbit') aData['colorLastName'] = 'red'
+  //       else aData['colorLastName'] = 'cyan'
+  //       return aData
+  //     })
+  //
+  //     return aJson
+  //   }
+  //
+  // })
 
-		window.setColorToData = function(aJson)
-		{
-			var aJsonArray = [];
-			if (!Array.isArray(aJson))
-				aJsonArray[0] = aJson;
-			else
-			 	aJsonArray = aJson;
-
-			aJson = aJsonArray.map( (aData) => {
-				if (aData.firstname == "John") aData["colorFirstName"] = "green";
-				else aData["colorFirstName"] = "blue";
-				if (aData.lastname == "Rabbit") aData["colorLastName"] = "red";
-				else aData["colorLastName"] = "cyan";
-				return aData;
-			});
-
-			return aJson;
-		}
-
-	});
-
-	$("body").append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()));
+  $('body').append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()))
 </script>
 
 </html>

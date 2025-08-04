@@ -1,3 +1,3 @@
-export class Websocket {
+export default class Websocket {
 
 }

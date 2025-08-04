@@ -110,16 +110,7 @@
     const blapyContainer = document.querySelector("#myBlapy");
 
     blapyContainer.Blapy({
-      debug: true,
-      logLevel: 3,
-      alertError: false,
-
-      debugIfsm: true,
-      LogLevelIfsm: 3,
     });
-
-    blapyContainer.Blapy().myFSM.debug = true;
-    blapyContainer.Blapy().myFSM.LogLevel = 3;
 
     blapyContainer.addEventListener("Blapy_ErrorOnPageChange", (event, error) => {
       console.error(`Blapy error ${error}`);

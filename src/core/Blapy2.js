@@ -37,6 +37,7 @@ import { TemplateManager } from './TemplateManager.js'
 import { Router } from './Router.js'
 import { BlapyBlock } from './BlapyBlock.js'
 import { AjaxService } from './AjaxService.js'
+import { Blapymotion } from '../modules/Animation.js'
 
 
 /**
@@ -152,6 +153,10 @@ export class Blapy {
 
     this.optsIfsm.logLevel = this.opts.LogLevelIfsm
 
+    if (typeof Blapymotion !== 'undefined') {
+      this.animation = new Blapymotion()
+    }
+
 
     this.myUIObject = this.container
     this.myUIObjectID = this.container.id
@@ -197,7 +202,6 @@ export class Blapy {
    */
   async initApplication() {
     this.logger.info('InitApplication', 'core')
-
 
     try {
 
@@ -426,10 +430,6 @@ export class Blapy {
           pageLoaded: {
             init_function: function(p, e, data) {
 
-              console.log('🎭 FSM pageLoaded triggered')
-              console.log('  - htmlPage preview:', data.htmlPage.substring(0, 100))
-              console.log('  - params:', data.params)
-
               let pageContent = data.htmlPage
               let params = data.params
               let aObjectId = params.blapyobjectid
@@ -465,8 +465,8 @@ export class Blapy {
 
               } catch (e) {
                 //not json input... but html...
-                console.error(e)
               }
+
 
               switch (params['blapyaction']) {
                 case 'update':
@@ -530,15 +530,12 @@ export class Blapy {
 
                     // Gérer les containers embed en xmp
                     let tmpContainer = aBlapyContainer.querySelector('xmp.blapybin')
-                    console.log(`🔧 [${containerName}] Has xmp.blapybin:`, !!tmpContainer)
 
                     if ((dataBlapyUpdate !== 'json') && tmpContainer) {
                       aBlapyContainer.innerHTML = this.opts.theBlapy.utils.atou(tmpContainer.innerHTML)
-                      console.log(`🔧 [${containerName}] Decoded xmp content ${aBlapyContainer.innerHTML}`)
 
                     }
 
-                    // Événements before content change
                     if (myFSM.opts.beforeContentChange) {
                       myFSM.opts.beforeContentChange(myContainer)
                     }
@@ -546,7 +543,6 @@ export class Blapy {
                       detail: this.myUIObject,
                     }))
 
-                    // TRAITEMENT SELON LE TYPE DE MISE À JOUR
                     if (!dataBlapyUpdate || dataBlapyUpdate === 'update') {
                       // Mise à jour standard
                       if (aBlapyContainer.getAttribute('data-blapy-container-content') !== myContainer.getAttribute('data-blapy-container-content') ||
@@ -609,18 +605,11 @@ export class Blapy {
                       myContainer.remove()
                       myContainer = myContainerParent
                     } else if (dataBlapyUpdate === 'json') {
-                      // JSON update - déléguer au TemplateManager
-
-                      console.log(`📊 [${containerName}] Processing JSON update`)
-                      console.log(`📊 [${containerName}] tmpContainer:`, !!tmpContainer)
-                      console.log(`📊 [${containerName}] myContainer:`, myContainer.getAttribute('data-blapy-container-name'))
-                      console.log(`📊 [${containerName}] aBlapyContainer:`, aBlapyContainer.getAttribute('data-blapy-container-name'))
-
                       await myFSM.opts.theBlapy.templateManager.processJsonUpdate(tmpContainer, myContainer, aBlapyContainer, jsonFeatures, this.opts.theBlapy)
 
                     } else {
                       // Plugin custom
-                      let pluginUpdateFunction = myFSM.opts.theBlapy[dataBlapyUpdate]
+                      let pluginUpdateFunction = myFSM.opts.theBlapy.animation[dataBlapyUpdate]
                       if (pluginUpdateFunction && typeof pluginUpdateFunction === 'function') {
                         if (aBlapyContainer.getAttribute('data-blapy-container-content') !== myContainer.getAttribute('data-blapy-container-content') ||
                           (params['force-update'] == 1) ||
@@ -689,14 +678,31 @@ export class Blapy {
         },
       }
 
+      if (this.opts.fsmExtension) {
+        this._deepMerge(managerBlapy, this.opts.fsmExtension)
+      }
+
       $(this.myUIObject).iFSM(managerBlapy, this.optsIfsm)
       this.myFSM = $(this.myUIObject).getFSM(managerBlapy)
+
+
 
       if (!this.router.init()) {
         this.logger.error('Failed to initialize router', 'core')
         return false
       }
 
+      console.log(managerBlapy)
+
+      const originalTrigger = this.myFSM.trigger;
+      this.myFSM.trigger = function (eventName, data) {
+        // console.warn('🚨 [DEBUG]' + eventName + 'triggered from:');
+        // console.trace(); // ← STACK TRACE COMPLÈTE
+        // console.warn('🚨 [DEBUG] Current FSM state:', this.currentState);
+        // console.warn('🚨 [DEBUG] Data:', data);
+
+        return originalTrigger.call(this, eventName, data);
+      };
 
       return true
 
@@ -1039,6 +1045,25 @@ export class Blapy {
     }).html(JSON.stringify(aJsonObject['blapy-data']))
 
     return htmlBlapyBlock
+  }
+
+  _deepMerge(target, source) {
+    for (const key in source) {
+      if (
+        source.hasOwnProperty(key) &&
+        typeof source[key] === 'object' &&
+        source[key] !== null &&
+        !Array.isArray(source[key])
+      ) {
+        if (!target[key] || typeof target[key] !== 'object') {
+          target[key] = {}
+        }
+        this._deepMerge(target[key], source[key])
+      } else {
+        target[key] = source[key]
+      }
+    }
+    return target
   }
 }
 

@@ -18,7 +18,7 @@ include("header.php");
 							<p>sent id: <?php if (!empty($_GET['id'])) echo $_GET['id']?>
 						</div>
 					</div>	
-					<p>Click on the <a href="index.php" data-blapy-link="true">"Hello world"</a> link, it will then change the Blapy content of the current page by the one coming from the page of this link</p>
+					<p>Click on the <a href="index.php" data-blapy-link>"Hello world"</a> link, it will then change the Blapy content of the current page by the one coming from the page of this link</p>
 
 <?php 
 include("footer.php");

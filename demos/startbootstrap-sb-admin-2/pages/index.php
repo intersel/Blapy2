@@ -550,8 +550,8 @@
     <script src="../../../lib/json5/index.min.js"></script>
     <script src="../../../lib/iFSM/iFSM.js"></script>
     <script type="text/javascript" src="../../../lib/json2html/json2html.js"></script>
-    <script type="module">
-        import Blapy2 from "../../../src/index.js";
+    <script src="../../../dist/blapy2.js"></script>
+    <script>
 
         document.addEventListener("DOMContentLoaded", () => {
             const blapyContainer = document.querySelector("#myBlapy");

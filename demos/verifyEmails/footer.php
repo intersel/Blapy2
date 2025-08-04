@@ -1,17 +1,16 @@
-<script type="text/javascript" src="../../Blapy.js"></script>
-<script type="text/javascript" src="../../Blapy_AnimationPlugins.js"></script>
+<script src="../../dist/blapy2.js"></script>
 <script>
-	$( document ).ready(function() {
 
-		//start Blapy
-		$('#myBlapy').Blapy({activeSammy:true});
+  document.addEventListener("DOMContentLoaded", () => {
 
-		//catch errors
-		$( "#myBlapy" ).on( "Blapy_ErrorOnPageChange", function(event,anError) {
-			  alert( anError );
-			});
+    let myBlapy = document.querySelector("#myBlapy");
 
-	});
+    myBlapy.Blapy();
+
+    myBlapy.addEventListener("Blapy_ErrorOnPageChange", function(e, error) {
+      alert(error);
+    })
+  })
 
 	//do the testing from a URL...
 	var emailPos=0;
