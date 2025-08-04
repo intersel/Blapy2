@@ -41,8 +41,15 @@
 		//call for the next test
 		oneTesting(); 
 	});
-	
-	$("body").append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()));
+
+  const h3 = document.createElement('h3')
+  h3.textContent = 'HTML code of the page'
+
+  const pre = document.createElement('pre')
+  pre.textContent = document.documentElement.outerHTML
+
+  document.body.appendChild(h3)
+  document.body.appendChild(pre)
 </script>
 
 

@@ -31,6 +31,13 @@
  * - 30/07/25 - C.NELHOMME - V1.0 - Creation of the base version
  */
 
+/*@Todo
+  Websocket module
+  Json append
+  Test
+  Build module
+ */
+
 import { Logger } from './Logger.js'
 import { Utils } from './Utils.js'
 import { TemplateManager } from './TemplateManager.js'

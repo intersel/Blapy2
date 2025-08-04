@@ -74,47 +74,47 @@
 <script type="text/javascript" src="../../dist/blapy2.js"></script>
 <script>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    let myBlapy = document.querySelector("#myBlapy");
+  document.addEventListener('DOMContentLoaded', () => {
+    let myBlapy = document.querySelector('#myBlapy')
     myBlapy.Blapy()
+
+    myBlapy.addEventListener('Blapy_ErrorOnPageChange', (e, error) => {
+      alert('Blapy error: ', error)
+    })
   })
 
   window.submitBlapyForm = function(formId) {
     document.getElementById(formId).dispatchEvent(
-      new Event('submit', {bubbles: true, cancelable: true})
-    );
-  };
-  // $(document).ready(function() {
-  //
-  //   //start Blapy
-  //   $('#myBlapy').Blapy()
-  //
-  //   //catch errors
-  //   $('#myBlapy').on('Blapy_ErrorOnPageChange', function(event, anError) {
-  //     alert('Blapy error: ' + anError)
-  //   })
-  //
-  //   window.setColorToData = function(aJson) {
-  //     var aJsonArray = []
-  //     if (!Array.isArray(aJson))
-  //       aJsonArray[0] = aJson
-  //     else
-  //       aJsonArray = aJson
-  //
-  //     aJson = aJsonArray.map((aData) => {
-  //       if (aData.firstname == 'John') aData['colorFirstName'] = 'green'
-  //       else aData['colorFirstName'] = 'blue'
-  //       if (aData.lastname == 'Rabbit') aData['colorLastName'] = 'red'
-  //       else aData['colorLastName'] = 'cyan'
-  //       return aData
-  //     })
-  //
-  //     return aJson
-  //   }
-  //
-  // })
+      new Event('submit', { bubbles: true, cancelable: true }),
+    )
+  }
 
-  $('body').append('<h3>HTML code of the page</h3>').append(jQuery('<pre />').text($('html').html()))
+  window.setColorToData = function(aJson) {
+    var aJsonArray = []
+    if (!Array.isArray(aJson))
+      aJsonArray[0] = aJson
+    else
+      aJsonArray = aJson
+
+    aJson = aJsonArray.map((aData) => {
+      if (aData.firstname == 'John') aData['colorFirstName'] = 'green'
+      else aData['colorFirstName'] = 'blue'
+      if (aData.lastname == 'Rabbit') aData['colorLastName'] = 'red'
+      else aData['colorLastName'] = 'cyan'
+      return aData
+    })
+
+    return aJson
+  }
+
+  const h3 = document.createElement('h3')
+  h3.textContent = 'HTML code of the page'
+
+  const pre = document.createElement('pre')
+  pre.textContent = document.documentElement.outerHTML
+
+  document.body.appendChild(h3)
+  document.body.appendChild(pre)
 </script>
 
 </html>
