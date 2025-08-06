@@ -1,6 +1,6 @@
 {
   "name": "blapy2",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,8 @@
     "playwright": "^1.54.2",
     "terser": "^5.43.1",
     "vite": "^7.0.6",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "jsdom": "latest"
   },
   "dependencies": {
     "vite-plugin-banner": "^0.8.1"
