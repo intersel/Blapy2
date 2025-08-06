@@ -49,6 +49,9 @@ export default defineConfig({
       external: [],
     },
   },
+  test: {
+    environment: 'jsdom'
+  },
   plugins: [
     banner(blapyBanner),
   ],

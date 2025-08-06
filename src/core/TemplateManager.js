@@ -764,7 +764,6 @@ export class TemplateManager {
           jsonDataObj,
         )
         parsed = true
-        console.log(newHtml)
       }
 
     }

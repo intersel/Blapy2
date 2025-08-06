@@ -32,8 +32,6 @@
  */
 
 /*@Todo
-  Websocket module
-  Json append
   Test
   Build module
  */
@@ -44,7 +42,6 @@ import { TemplateManager } from './TemplateManager.js'
 import { Router } from './Router.js'
 import { BlapyBlock } from './BlapyBlock.js'
 import { AjaxService } from './AjaxService.js'
-import { Blapymotion } from '../modules/Animation.js'
 
 
 /**
@@ -136,7 +133,7 @@ export class Blapy {
     //Initialize options and callbacks
     this.defaults = {
       debug: false,
-      logLevel: 2,
+      logLevel: 1,
       alertError: false,
       enableRouter: false,
       routerRoot: '/',
@@ -152,7 +149,9 @@ export class Blapy {
       fsmExtension: null,
       LogLevelIfsm: 1,
       debugIfsm: false,
+      websocketOptions: {},
     }
+
 
     this.opts = { ...this.defaults, ...options }
     this.optsIfsm = this.opts
@@ -163,7 +162,6 @@ export class Blapy {
     if (typeof Blapymotion !== 'undefined') {
       this.animation = new Blapymotion()
     }
-
 
     this.myUIObject = this.container
     this.myUIObjectID = this.container.id
@@ -191,6 +189,11 @@ export class Blapy {
     //For IFSM
     this.opts.theBlapy = this
 
+    //Not finished
+    // if (typeof BlapySocket !== 'undefined' && Object.keys(this.opts.websocketOptions).length > 0) {
+    //   this.websocket = new BlapySocket({ ...this.opts.websocketOptions }, this)
+    // }
+
     this.logger.info(`Blapy instance (#${this.myUIObjectID}) created`, 'Blapy2 constructor')
   }
 
@@ -216,7 +219,7 @@ export class Blapy {
       const managerBlapy = {
         PageLoaded: {
           enterState: {
-            init_function: function() {
+            init_function: function () {
 
               // I didn’t have access to the instance, so I used the method below.
               this.opts.theBlapy.myFSM = this
@@ -235,12 +238,12 @@ export class Blapy {
         },
         PreparePage: {
           enterState: {
-            init_function: function() {
+            init_function: function () {
             },
             propagate_event: 'setBlapyUrl',
           },
           setBlapyUrl: {
-            init_function: function() {
+            init_function: function () {
               this.opts.theBlapy.setBlapyURL()
             },
             next_state: 'PreparePage_setBlapyJsonTemplates',
@@ -248,7 +251,7 @@ export class Blapy {
         },
         PreparePage_setBlapyJsonTemplates: {
           enterState: {
-            init_function: function() {
+            init_function: function () {
               this.opts.theBlapy.setBlapyJsonTemplates()
             },
             next_state: 'PreparePage_setBlapyUpdateOnDisplay',
@@ -256,7 +259,7 @@ export class Blapy {
         },
         PreparePage_setBlapyUpdateOnDisplay: {
           blapyJsonTemplatesIsSet: {
-            init_function: function() {
+            init_function: function () {
               this.opts.theBlapy.setBlapyUpdateOnDisplay()
             },
             next_state: 'PageReady',
@@ -266,34 +269,34 @@ export class Blapy {
           updateBlock: 'loadUrl',
           postData: 'loadUrl',
           loadUrl: // Someone tries to load an URL but the page is not ready... retry later.
-            {
-              how_process_event: {
-                delay: 50,
-                preventcancel: true,
-              },
-              propagate_event: true,
+          {
+            how_process_event: {
+              delay: 50,
+              preventcancel: true,
             },
+            propagate_event: true,
+          },
         }, //setBlapyJsonTemplates state
         PageReady: {
           enterState: {
-            init_function: function() {
+            init_function: function () {
               if (this.opts.pageReadyFunction) this.opts.pageReadyFunction()
               this.opts.theBlapy.trigger('Blapy_PageReady')
             },
           },
           loadUrl: {
-            init_function: function(p, e, data) {
+            init_function: function (p, e, data) {
               data.method = 'GET'
               this.trigger('postData', data)
             },
           },
 
           postData: {
-            init_function: function(p, e, data) {
+            init_function: function (p, e, data) {
               if (this.opts.beforePageLoad) this.opts.beforePageLoad(data)
               this.opts.theBlapy.trigger('Blapy_beforePageLoad', data)
             },
-            out_function: function(p, e, data) {
+            out_function: function (p, e, data) {
 
               let aURL = data.aUrl
               let aObjectId = data.aObjectId ? data.aObjectId : e.currentTarget.id
@@ -373,7 +376,7 @@ export class Blapy {
             next_state: 'ProcessPageChange',
           },
           updateBlock: {
-            init_function: function(p, e, data) {
+            init_function: function (p, e, data) {
               if (this.opts.beforePageLoad) this.opts.beforePageLoad(data)
               this.opts.theBlapy.trigger('Blapy_beforePageLoad', data)
               if (!data?.html) {
@@ -381,7 +384,7 @@ export class Blapy {
                 this.trigger('errorOnLoadingPage', 'updateBlock: no html property found')
               }
             },
-            out_function: function(p, e, data) {
+            out_function: function (p, e, data) {
               if (!data) return
               if (!data.params) data.params = ''
 
@@ -418,7 +421,7 @@ export class Blapy {
             next_state: 'ProcessPageChange',
           },
           reloadBlock: {
-            init_function: function(p, e, data) {
+            init_function: function (p, e, data) {
               let params = {}
               if (data) params = data.params
 
@@ -435,7 +438,7 @@ export class Blapy {
         ProcessPageChange: {
           enterState: {},
           pageLoaded: {
-            init_function: function(p, e, data) {
+            init_function: function (p, e, data) {
 
               let pageContent = data.htmlPage
               let params = data.params
@@ -589,7 +592,113 @@ export class Blapy {
                       }
                       myContainer = aBlapyContainer
                     } else if (dataBlapyUpdate === 'json-append') {
-                      //wait
+                      let currentJsonData = myContainer.getAttribute('data-blapy-json-data');
+                      let currentData = [];
+
+                      if (currentJsonData) {
+                        try {
+                          currentData = jsonFeatures.parse(currentJsonData);
+                          if (!Array.isArray(currentData)) {
+                            currentData = [currentData];
+                          }
+                        } catch (e) {
+                          myFSM.opts.theBlapy.logger.warn('Could not parse existing JSON data, starting fresh', 'json-append');
+                          currentData = [];
+                        }
+                      }
+
+                      let newJsonData = null;
+
+                      if (tmpContainer) {
+                        try {
+                          const encodedData = tmpContainer.innerHTML;
+                          const decodedData = myFSM.opts.theBlapy.utils.atou(encodedData);
+                          newJsonData = jsonFeatures.parse(decodedData);
+                        } catch (e) {
+                          myFSM.opts.theBlapy.logger.error('Failed to decode/parse new JSON data', 'json-append');
+                          return;
+                        }
+                      } else {
+                        try {
+                          const htmlContent = aBlapyContainer.innerHTML;
+                          newJsonData = jsonFeatures.parse(htmlContent);
+                        } catch (e) {
+                          myFSM.opts.theBlapy.logger.error('Failed to parse new JSON data', 'json-append');
+                          return;
+                        }
+                      }
+
+                      if (newJsonData && newJsonData['blapy-data']) {
+                        newJsonData = newJsonData['blapy-data'];
+                      }
+
+                      let mergedData = [];
+
+                      const appendStrategy = myContainer.getAttribute('data-blapy-json-append-strategy') || 'end';
+
+                      if (appendStrategy === 'start') {
+                        if (Array.isArray(newJsonData)) {
+                          mergedData = [...newJsonData, ...currentData];
+                        } else {
+                          mergedData = [newJsonData, ...currentData];
+                        }
+                      } else if (appendStrategy === 'unique') {
+                        const uniqueKey = myContainer.getAttribute('data-blapy-json-unique-key') || 'id';
+                        mergedData = [...currentData];
+
+                        const newItems = Array.isArray(newJsonData) ? newJsonData : [newJsonData];
+                        for (const newItem of newItems) {
+                          const exists = mergedData.some(item =>
+                            item[uniqueKey] && newItem[uniqueKey] && item[uniqueKey] === newItem[uniqueKey]
+                          );
+                          if (!exists) {
+                            mergedData.push(newItem);
+                          }
+                        }
+                      } else {
+                        if (Array.isArray(newJsonData)) {
+                          mergedData = [...currentData, ...newJsonData];
+                        } else {
+                          mergedData = [...currentData, newJsonData];
+                        }
+                      }
+
+                      const maxItems = parseInt(myContainer.getAttribute('data-blapy-json-max-items'));
+                      if (maxItems && maxItems > 0 && mergedData.length > maxItems) {
+                        if (appendStrategy === 'start') {
+                          mergedData = mergedData.slice(0, maxItems);
+                        } else {
+                          mergedData = mergedData.slice(-maxItems);
+                        }
+                      }
+
+                      myContainer.setAttribute('data-blapy-json-data', JSON.stringify(mergedData));
+
+                      const tempBlapyContainer = aBlapyContainer.cloneNode(true);
+                      tempBlapyContainer.innerHTML = JSON.stringify(mergedData);
+
+                      await myFSM.opts.theBlapy.templateManager.processJsonUpdate(
+                        null,
+                        myContainer,
+                        tempBlapyContainer,
+                        jsonFeatures,
+                        myFSM.opts.theBlapy
+                      );
+
+                      myContainer.dispatchEvent(new CustomEvent('Blapy_jsonAppended', {
+                        detail: {
+                          newItems: Array.isArray(newJsonData) ? newJsonData.length : 1,
+                          totalItems: mergedData.length,
+                          data: mergedData
+                        }
+                      }));
+
+
+                      myFSM.opts.theBlapy.logger.info(
+                        `JSON Append completed: added ${Array.isArray(newJsonData) ? newJsonData.length : 1} items, total: ${mergedData.length}`,
+                        'json-append'
+                      );
+
                     } else if (dataBlapyUpdate === 'replace') {
                       // Replace
                       myContainer.innerHTML = aBlapyContainer.innerHTML
@@ -649,7 +758,7 @@ export class Blapy {
                   break
               }
             },
-            out_function: function(p, e, data) {
+            out_function: function (p, e, data) {
               // Événement final
               if (this.opts.afterPageChange) {
                 this.opts.afterPageChange()
@@ -659,7 +768,7 @@ export class Blapy {
             next_state: 'PageReady',
           },
           errorOnLoadingPage: {
-            init_function: function(p, e, data) {
+            init_function: function (p, e, data) {
               if (this.opts.onErrorOnPageChange) this.opts.onErrorOnPageChange(data)
               this.opts.theBlapy.trigger('Blapy_ErrorOnPageChange', [data])
             },
@@ -669,13 +778,13 @@ export class Blapy {
           updateBlock: 'loadUrl',
           postData: 'loadUrl',
           loadUrl:
-            {
-              how_process_event: {
-                delay: 50,
-                preventcancel: true,
-              },
-              propagate_event: true,
+          {
+            how_process_event: {
+              delay: 50,
+              preventcancel: true,
             },
+            propagate_event: true,
+          },
         },
 
         DefaultState: {
@@ -693,23 +802,10 @@ export class Blapy {
       this.myFSM = $(this.myUIObject).getFSM(managerBlapy)
 
 
-
       if (!this.router.init()) {
         this.logger.error('Failed to initialize router', 'core')
         return false
       }
-
-      console.log(managerBlapy)
-
-      const originalTrigger = this.myFSM.trigger;
-      this.myFSM.trigger = function (eventName, data) {
-        // console.warn('🚨 [DEBUG]' + eventName + 'triggered from:');
-        // console.trace(); // ← STACK TRACE COMPLÈTE
-        // console.warn('🚨 [DEBUG] Current FSM state:', this.currentState);
-        // console.warn('🚨 [DEBUG] Data:', data);
-
-        return originalTrigger.call(this, eventName, data);
-      };
 
       return true
 
@@ -1076,14 +1172,13 @@ export class Blapy {
 
 
 /**
- * Factory function pour créer une instance Blapy
- * Compatible avec la syntaxisation jQuery de Blapy V1
- * @param {string|HTMLElement} selector - Sélecteur ou élément DOM
- * @param {Object} [options] - Options de configuration
- * @returns {Blapy} Instance Blapy
+ * @param {string|HTMLElement} selector - A DOM selector or element
+ * @param {Object} [options] - Configuration options
+ * @returns {Blapy} A Blapy instance
  */
 export function createBlapy(selector, options = {}) {
-  // Implementation à venir
+  const element = document.querySelector(selector)
+  return element.Blapy(options)
 }
 
 

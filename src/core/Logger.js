@@ -31,8 +31,8 @@ export class Logger {
                 logLevel = 2,
                 alertError = false,
               } = {}) {
-    this.debug = false
-    this.logLevel = 3
+    this.debug = debug
+    this.logLevel = logLevel
     this.alertError = alertError
   }
 
@@ -75,6 +75,8 @@ export class Logger {
    * @param {string} [service] - The service originating the log.
    */
   log(message, errorLevel = 3, service = 'blapy') {
+    if (errorLevel > this.logLevel) return
+
     if (errorLevel >= 2 && !this.debug) return
 
     if (
@@ -84,6 +86,9 @@ export class Logger {
       switch (errorLevel) {
         case 1:
           console.error(`[Blapy2] ${message} from ${service}`)
+          if (this.alertError) {
+            alert(`[Blapy2 Error] ${message} from ${service}`)
+          }
           break
         case 2:
           console.warn(`[Blapy2] ${message} from ${service}`)
@@ -96,6 +101,5 @@ export class Logger {
           break
       }
     }
-
   }
 }
