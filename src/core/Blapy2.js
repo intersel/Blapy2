@@ -29,6 +29,7 @@
  *
  *  Edit :
  * - 30/07/25 - C.NELHOMME - V1.0 - Creation of the base version
+ * - 06/08/25 - C.NELHOMME - V2.1 - Added websockets supports blapy can receive order by the websockets server.
  */
 
 /*@Todo
@@ -159,7 +160,9 @@ export class Blapy {
 
     this.optsIfsm.logLevel = this.opts.LogLevelIfsm
 
+
     if (typeof Blapymotion !== 'undefined') {
+      console.log("test")
       this.animation = new Blapymotion()
     }
 
@@ -190,9 +193,9 @@ export class Blapy {
     this.opts.theBlapy = this
 
     //Not finished
-    // if (typeof BlapySocket !== 'undefined' && Object.keys(this.opts.websocketOptions).length > 0) {
-    //   this.websocket = new BlapySocket({ ...this.opts.websocketOptions }, this)
-    // }
+    if (typeof BlapySocket !== 'undefined' && Object.keys(this.opts.websocketOptions).length > 0) {
+      this.websocket = new BlapySocket({ ...this.opts.websocketOptions }, this)
+    }
 
     this.logger.info(`Blapy instance (#${this.myUIObjectID}) created`, 'Blapy2 constructor')
   }
@@ -380,16 +383,16 @@ export class Blapy {
               if (this.opts.beforePageLoad) this.opts.beforePageLoad(data)
               this.opts.theBlapy.trigger('Blapy_beforePageLoad', data)
               if (!data?.html) {
-                this.logger.info('updateBlock: no html property found')
+                this.opts.theBlapy.logger.info('updateBlock: no html property found')
                 this.trigger('errorOnLoadingPage', 'updateBlock: no html property found')
               }
             },
             out_function: function (p, e, data) {
               if (!data) return
-              if (!data.params) data.params = ''
+              if (!data.params) data.params = {}
 
               if (('embeddingBlockId' in data.params) && (!data.params.embeddingBlockId)) {
-                this.logger.info(`[updateBlock on ${this.myUIObjectID} embeddingBlockId has been set but is undefined! must be an error...]`)
+                this.opts.theBlapy.logger.info(`[updateBlock on ${this.myUIObjectID} embeddingBlockId has been set but is undefined! must be an error...]`)
               }
 
               let aembeddingBlockId = data.params.embeddingBlockId
@@ -426,7 +429,7 @@ export class Blapy {
               if (data) params = data.params
 
               if (('embeddingBlockId' in params) && (!params.embeddingBlockId)) {
-                this.logger.info('[reloadBlock on ' + this.myUIObjectID + '] embeddingBlockId has been set but is undefined! must be an error...', 1)
+                this.opts.theBlapy.logger.info('[reloadBlock on ' + this.myUIObjectID + '] embeddingBlockId has been set but is undefined! must be an error...', 1)
               }
 
               this.opts.theBlapy.setBlapyJsonTemplates(true, params.embeddingBlockId, params.templateId)
@@ -725,6 +728,7 @@ export class Blapy {
 
                     } else {
                       // Plugin custom
+
                       let pluginUpdateFunction = myFSM.opts.theBlapy.animation[dataBlapyUpdate]
                       if (pluginUpdateFunction && typeof pluginUpdateFunction === 'function') {
                         if (aBlapyContainer.getAttribute('data-blapy-container-content') !== myContainer.getAttribute('data-blapy-container-content') ||
@@ -741,6 +745,7 @@ export class Blapy {
                     // Reconfigurer les intervalles et la visibilité
                     myFSM.opts.theBlapy.blapyBlocks.setBlapyUpdateIntervals()
                     myFSM.opts.theBlapy.setBlapyUpdateOnDisplay()
+                    myFSM.opts.theBlapy.setBlapyURL()
 
                     // Événements after content change
                     if (myFSM.opts.afterContentChange) {
@@ -846,11 +851,6 @@ export class Blapy {
    */
   setBlapyURL() {
     this.logger.info('Set blapyURL', 'router')
-
-    if (this.opts.enableRouter && this.router.isInitialized) {
-      this.logger.info('Router enabled - Navigo will handle blapy links', 'router')
-      return
-    }
 
     const blapyLinks = this.container.querySelectorAll('[data-blapy-link]')
 

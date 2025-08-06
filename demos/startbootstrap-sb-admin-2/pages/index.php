@@ -556,10 +556,13 @@
         document.addEventListener("DOMContentLoaded", () => {
             const blapyContainer = document.querySelector("#myBlapy");
 
-            let blapys = blapyContainer.Blapy({debug: true, logLevel: 3})
+            let blapys = blapyContainer.Blapy({ debug: true, logLevel: 3 })
 
-            blapys.myFSM.trigger("postData", {aUrl: 'phpAPI/initActions.php'})
+            blapys.myFSM.trigger("postData", { aUrl: 'phpAPI/initActions.php' })
 
+            document.querySelector("#side-menu").addEventListener("Blapy_afterContentChange", (event, aBlock) => {
+                $('#side-menu').metisMenu()
+            });
         })
 
     </script>

@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------------------
  */
 
-export class Blapymotion {
+class Blapymotion {
   constructor() {
     this.fadeInOut = this.fadeInOut.bind(this)
     this.rightOutIn = this.rightOutIn.bind(this)
@@ -28,8 +28,8 @@ export class Blapymotion {
    * @param {HTMLElement} newContainer - The container to be displayed.
    */
   fadeInOut(oldContainer, newContainer) {
-    const fadeOutDelay = parseInt(newContainer.dataset.blapyFadeoutDelay) || 500
-    const fadeInDelay = parseInt(newContainer.dataset.blapyFadeinDelay) || 500
+    const fadeOutDelay = parseInt(newContainer.dataset.blapyFadeoutDelay) || 1500
+    const fadeInDelay = parseInt(newContainer.dataset.blapyFadeinDelay) || 1500
 
     this._fadeOut(oldContainer, fadeOutDelay, () => {
       newContainer.style.opacity = 0
@@ -44,8 +44,8 @@ export class Blapymotion {
    * @param {HTMLElement} newContainer - The container to be displayed.
    */
   rightOutIn(oldContainer, newContainer) {
-    const fadeOutDelay = parseInt(newContainer.dataset.blapyFadeoutDelay) || 500
-    const fadeInDelay = parseInt(newContainer.dataset.blapyFadeinDelay) || 500
+    const fadeOutDelay = parseInt(newContainer.dataset.blapyFadeoutDelay) || 1500
+    const fadeInDelay = parseInt(newContainer.dataset.blapyFadeinDelay) || 1500
 
     const originalLeft = oldContainer.getBoundingClientRect().left
     const documentWidth = document.documentElement.clientWidth
@@ -127,3 +127,5 @@ export class Blapymotion {
     setTimeout(() => callback?.(), duration)
   }
 }
+
+export default Blapymotion;

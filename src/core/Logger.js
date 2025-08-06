@@ -27,13 +27,14 @@ export class Logger {
    * @param {boolean} options.alertError - Displays an alert for errors.
    */
   constructor({
-                debug = false,
-                logLevel = 2,
-                alertError = false,
-              } = {}) {
+                debug,
+                logLevel,
+                alertError,
+              }) {
     this.debug = debug
     this.logLevel = logLevel
     this.alertError = alertError
+
   }
 
   /**

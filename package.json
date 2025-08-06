@@ -1,11 +1,12 @@
 {
   "name": "blapy2",
-  "version": "2.0.1",
+  "version": "2.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "build": "vite build"
+    "build": "vite build",
+    "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\""
   },
   "keywords": [],
   "author": "",

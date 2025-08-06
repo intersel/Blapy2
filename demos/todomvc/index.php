@@ -42,13 +42,13 @@
     <ul id="filters-All" class="filters" data-blapy-container="true" data-blapy-container-name="filters"
         data-blapy-container-content="filters-All">
       <li>
-        <a href="php/getAll.php" data-blapy-link="true" class="selected">All</a>
+        <a href="php/getAll.php" data-blapy-link class="selected">All</a>
       </li>
       <li>
-        <a href="php/getActive.php" data-blapy-link="true">Active</a>
+        <a href="php/getActive.php" data-blapy-link>Active</a>
       </li>
       <li>
-        <a href="php/getCompleted.php" data-blapy-link="true">Completed</a>
+        <a href="php/getCompleted.php" data-blapy-link>Completed</a>
       </li>
     </ul>
     <button id="showClear" class="clear-completed" data-blapy-container="true"
@@ -70,7 +70,10 @@
 <script>
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('#myBlapy').Blapy({ enableRouter: true })
+    let myBlapy = document.querySelector('#myBlapy')
+    myBlapy.Blapy({ enableRouter: true, debug: true })
+
+    myBlapy.Blapy().myFSM.trigger('postData', { aUrl: 'php/resetActions.php' })
 
     var oriVal
     $(document).on('dblclick', '#todo-list label', function() {
@@ -98,12 +101,6 @@
     })
   })
 
-  // $(document).ready(function() {
-  //
-  //   //start Blapy
-  //   $('#myBlapy').Blapy({ activeSammy: true })
-  //   //init blocks
-  //   $('#myBlapy').trigger('postData', { aUrl: 'php/resetActions.php' })
   //
   //   //catch errors
   //   $('#myBlapy').on('Blapy_ErrorOnPageChange', function(event, anError) {

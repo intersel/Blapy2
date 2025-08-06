@@ -14,7 +14,7 @@
   <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
   <script src="../../lib/json5/index.min.js"></script>
   <script src="../../lib/iFSM/iFSM.js"></script>
-  <script src="../../src/modules/Animation.js" type="module"></script>
+  <script src="../../dist/BlapyMotion.js"></script>
 </head>
 <body>
 <div class="wrapper style1 first">

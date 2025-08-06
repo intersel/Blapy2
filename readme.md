@@ -887,7 +887,7 @@ The prototype of an animation plugin function is :
 myAnimationFunction(oldContainer,newContainer) {}
 ```
 
-Have a look in the src/modules/Animation.js and add your new functions in it inspired by the existing functions.
+Have a look in the dist/Blapymotion.js and add your new functions in it inspired by the existing functions.
 
 # Blapy websockets plugin
 

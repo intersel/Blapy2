@@ -5,3 +5,4 @@ docker-compose.yml
 dist/**
 test-results/**
 CLAUDE.md
+**/node_modules/
