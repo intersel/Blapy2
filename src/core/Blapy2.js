@@ -32,7 +32,6 @@
  */
 
 /*@Todo
-  Websocket module
   Json append
   Test
   Build module
@@ -44,7 +43,6 @@ import { TemplateManager } from './TemplateManager.js'
 import { Router } from './Router.js'
 import { BlapyBlock } from './BlapyBlock.js'
 import { AjaxService } from './AjaxService.js'
-import { Blapymotion } from '../modules/Animation.js'
 
 
 /**
@@ -152,7 +150,9 @@ export class Blapy {
       fsmExtension: null,
       LogLevelIfsm: 1,
       debugIfsm: false,
+      websocketOptions: {},
     }
+
 
     this.opts = { ...this.defaults, ...options }
     this.optsIfsm = this.opts
@@ -163,7 +163,6 @@ export class Blapy {
     if (typeof Blapymotion !== 'undefined') {
       this.animation = new Blapymotion()
     }
-
 
     this.myUIObject = this.container
     this.myUIObjectID = this.container.id
@@ -190,6 +189,11 @@ export class Blapy {
 
     //For IFSM
     this.opts.theBlapy = this
+
+    //Not finished
+    // if (typeof BlapySocket !== 'undefined' && Object.keys(this.opts.websocketOptions).length > 0) {
+    //   this.websocket = new BlapySocket({ ...this.opts.websocketOptions }, this)
+    // }
 
     this.logger.info(`Blapy instance (#${this.myUIObjectID}) created`, 'Blapy2 constructor')
   }
@@ -589,6 +593,7 @@ export class Blapy {
                       }
                       myContainer = aBlapyContainer
                     } else if (dataBlapyUpdate === 'json-append') {
+
                       //wait
                     } else if (dataBlapyUpdate === 'replace') {
                       // Replace
@@ -693,7 +698,6 @@ export class Blapy {
       this.myFSM = $(this.myUIObject).getFSM(managerBlapy)
 
 
-
       if (!this.router.init()) {
         this.logger.error('Failed to initialize router', 'core')
         return false
@@ -701,15 +705,15 @@ export class Blapy {
 
       console.log(managerBlapy)
 
-      const originalTrigger = this.myFSM.trigger;
-      this.myFSM.trigger = function (eventName, data) {
+      const originalTrigger = this.myFSM.trigger
+      this.myFSM.trigger = function(eventName, data) {
         // console.warn('🚨 [DEBUG]' + eventName + 'triggered from:');
         // console.trace(); // ← STACK TRACE COMPLÈTE
         // console.warn('🚨 [DEBUG] Current FSM state:', this.currentState);
         // console.warn('🚨 [DEBUG] Data:', data);
 
-        return originalTrigger.call(this, eventName, data);
-      };
+        return originalTrigger.call(this, eventName, data)
+      }
 
       return true
 
@@ -1076,14 +1080,13 @@ export class Blapy {
 
 
 /**
- * Factory function pour créer une instance Blapy
- * Compatible avec la syntaxisation jQuery de Blapy V1
- * @param {string|HTMLElement} selector - Sélecteur ou élément DOM
- * @param {Object} [options] - Options de configuration
- * @returns {Blapy} Instance Blapy
+ * @param {string|HTMLElement} selector - A DOM selector or element
+ * @param {Object} [options] - Configuration options
+ * @returns {Blapy} A Blapy instance
  */
 export function createBlapy(selector, options = {}) {
-  // Implementation à venir
+  const element = document.querySelector(selector)
+  return element.Blapy(options)
 }
 
 
