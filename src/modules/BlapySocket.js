@@ -4,12 +4,12 @@
  * RCS PARIS 488 379 660 - NAF 721Z
  *
  * File : BlapySocket.js
- * BlapySocket : WebSocket service for real-time communication in Blapy V2
+ * BlapySocket : WebSocket service for real-time communication in Blapy V2 (Receive Only)
  *
  * -----------------------------------------------------------------------------------------
  * @copyright Intersel 2015-2025
- * @fileoverview WebSocket service for Blapy V2 - handles real-time communication,
- *               remote commands, and bidirectional data exchange.
+ * @fileoverview WebSocket service for Blapy V2 - handles incoming real-time commands
+ *               and remote block updates. This version only receives messages.
  * @see {@link https://github.com/intersel/blapy2}
  * @author Corentin NELHOMME - corentin.nelhomme@intersel.fr
  * @version 1.0.0
@@ -20,7 +20,7 @@
 class BlapySocket {
 
   /**
-   * Initialize the WebSocket service for Blapy.
+   * Initialize the WebSocket service for Blapy (Receive Only).
    *
    * @constructor
    * @param {Object} [options={}] - Configuration options for the WebSocket service.
@@ -51,9 +51,6 @@ class BlapySocket {
     this.reconnectAttempts = 0
     this.reconnectTimer = null
     this.blapy = blapy
-    this.messageQueue = []
-    this.pendingResponses = new Map()
-    this.messageId = 0
 
     // Event callbacks
     this.callbacks = {
@@ -68,18 +65,19 @@ class BlapySocket {
       this.connect()
     }
 
-    this?.blapy?.logger?.info('BlapySocket initialized', 'WebSocket')
+    this.blapy.logger.info('BlapySocket initialized (Receive Only)', 'WebSocket')
   }
 
   connect() {
     return new Promise((resolve, reject) => {
       if (this.isConnected) {
-        this?.blapy?.logger?.warn('Already connected to WebSocket', 'WebSocket')
+        this.blapy.logger.warn("deja co")
+        this.blapy.logger.warn('Already connected to WebSocket', 'WebSocket')
         resolve()
         return
       }
 
-      this?.blapy?.logger?.info(`Connecting to WebSocket: ${this.options.url}`, 'WebSocket')
+      this.blapy.logger.info(`Connecting to WebSocket: ${this.options.url}`, 'WebSocket')
 
       try {
         this.ws = new WebSocket(this.options.url)
@@ -89,35 +87,15 @@ class BlapySocket {
           this.reconnectAttempts = 0
           this._clearReconnectTimer()
 
-          this?.blapy?.logger?.info('WebSocket connected successfully', 'WebSocket')
+          this._sendIdentification()
 
-          // Send authentication if provided
-          if (this.options.auth) {
-            this._sendMessage({
-              type: 'auth',
-              data: this.options.auth,
-              clientId: this.options.clientId,
-            })
-          } else {
-            // Send simple identification
-            this._sendMessage({
-              type: 'identify',
-              clientId: this.options.clientId,
-              blapyInstance: this.blapy?.myUIObjectID || 'unknown',
-            })
-          }
-
-          // Send queued messages
-          this._flushMessageQueue()
-
-          // Trigger callbacks
           this._triggerCallbacks('onOpen', event)
           resolve()
         }
 
         this.ws.onclose = (event) => {
           this.isConnected = false
-          this?.blapy?.logger?.warn(`WebSocket closed: ${event.code} - ${event.reason}`, 'WebSocket')
+          this.blapy.logger.warn(`WebSocket closed: ${event.code} - ${event.reason}`, 'WebSocket')
 
           this._triggerCallbacks('onClose', event)
 
@@ -128,7 +106,7 @@ class BlapySocket {
         }
 
         this.ws.onerror = (event) => {
-          this?.blapy?.logger?.error('WebSocket error occurred', 'WebSocket')
+          this.blapy.logger.error('WebSocket error occurred', 'WebSocket')
           this._triggerCallbacks('onError', event)
 
           if (!this.isConnected) {
@@ -141,7 +119,7 @@ class BlapySocket {
         }
 
       } catch (error) {
-        this?.blapy?.logger?.error(`Failed to create WebSocket connection: ${error.message}`, 'WebSocket')
+        this.blapy.logger.error(`Failed to create WebSocket connection: ${error.message}`, 'WebSocket')
         reject(error)
       }
     })
@@ -157,106 +135,12 @@ class BlapySocket {
     this._clearReconnectTimer()
 
     if (this.ws && this.isConnected) {
-      this?.blapy?.logger?.info('Disconnecting from WebSocket', 'WebSocket')
+      //this.blapy.logger.info('Disconnecting from WebSocket', 'WebSocket')
       this.ws.close(code, reason)
     }
 
     this.isConnected = false
     this.ws = null
-  }
-
-  /**
-   * Send a message through the WebSocket.
-   *
-   * @param {Object} message - The message object to send.
-   * @param {boolean} [expectResponse=false] - Whether to expect a response.
-   * @returns {Promise<Object>|null} Promise that resolves with response if expectResponse is true.
-   */
-  send(message, expectResponse = false) {
-    if (!this.isConnected) {
-      this?.blapy?.logger?.warn('WebSocket not connected, queuing message', 'WebSocket')
-      this.messageQueue.push({ message, expectResponse })
-      return expectResponse ? Promise.reject(new Error('Not connected')) : null
-    }
-
-    const messageWithId = {
-      ...message,
-      id: ++this.messageId,
-      timestamp: Date.now(),
-      clientId: this.options.clientId,
-    }
-
-    if (expectResponse) {
-      return new Promise((resolve, reject) => {
-        this.pendingResponses.set(messageWithId.id, { resolve, reject })
-
-        // Timeout for response
-        setTimeout(() => {
-          if (this.pendingResponses.has(messageWithId.id)) {
-            this.pendingResponses.delete(messageWithId.id)
-            reject(new Error('Response timeout'))
-          }
-        }, 10000) // 10 second timeout
-
-        this._sendMessage(messageWithId)
-      })
-    } else {
-      this._sendMessage(messageWithId)
-      return null
-    }
-  }
-
-  /**
-   * Send a Blapy command to remote instances.
-   *
-   * @param {string} command - The Blapy command (postData, updateBlock, etc.).
-   * @param {Object} data - Command parameters.
-   * @param {string} [targetClientId] - Specific client ID to target (optional).
-   * @returns {Promise<Object>|null} Promise with response if expecting one.
-   */
-  sendBlapyCommand(command, data, targetClientId = null) {
-    const message = {
-      type: 'blapy_command',
-      command: command,
-      data: data,
-      target: targetClientId,
-    }
-
-    this?.blapy?.logger?.info(`Sending Blapy command: ${command}`, 'WebSocket')
-    return this.send(message, false)
-  }
-
-  /**
-   * Request data from a remote Blapy instance.
-   *
-   * @param {string} blockName - Name of the block to request data from.
-   * @param {string} [targetClientId] - Specific client ID to target.
-   * @returns {Promise<Object>} Promise that resolves with the requested data.
-   */
-  requestData(blockName, targetClientId = null) {
-    const message = {
-      type: 'data_request',
-      blockName: blockName,
-      target: targetClientId,
-    }
-
-    this?.blapy?.logger?.info(`Requesting data for block: ${blockName}`, 'WebSocket')
-    return this.send(message, true)
-  }
-
-  /**
-   * Broadcast a message to all connected clients.
-   *
-   * @param {Object} data - Data to broadcast.
-   */
-  broadcast(data) {
-    const message = {
-      type: 'broadcast',
-      data: data,
-    }
-
-    this?.blapy?.logger?.info('Broadcasting message', 'WebSocket')
-    this.send(message, false)
   }
 
   /**
@@ -269,7 +153,7 @@ class BlapySocket {
     if (this.callbacks[event]) {
       this.callbacks[event].push(callback)
     } else {
-      this?.blapy?.logger?.warn(`Unknown event: ${event}`, 'WebSocket')
+      this.blapy.logger.warn(`Unknown event: ${event}`, 'WebSocket')
     }
   }
 
@@ -299,12 +183,35 @@ class BlapySocket {
       url: this.options.url,
       clientId: this.options.clientId,
       reconnectAttempts: this.reconnectAttempts,
-      queuedMessages: this.messageQueue.length,
-      pendingResponses: this.pendingResponses.size,
     }
   }
 
-  // Private methods
+
+  /**
+   * Send identification message only (minimal sending).
+   *
+   * @private
+   */
+  _sendIdentification() {
+    if (this.ws && this.isConnected) {
+      const identMessage = {
+        type: 'identify',
+        clientId: this.options.clientId,
+        blapyInstance: this.blapy?.myUIObjectID || 'unknown',
+        timestamp: Date.now()
+      }
+
+      if (this.options.auth) {
+        identMessage.auth = this.options.auth
+      }
+
+      try {
+        this.ws.send(JSON.stringify(identMessage))
+      } catch (error) {
+        this.blapy.logger.error(`Error sending identification: ${error.message}`, 'WebSocket')
+      }
+    }
+  }
 
   /**
    * Handle incoming WebSocket messages.
@@ -314,40 +221,26 @@ class BlapySocket {
    */
   _handleMessage(event) {
     try {
-
-
       const message = JSON.parse(event.data)
-
-      this?.blapy?.logger?.info(`Received message: ${message.type}`, 'WebSocket')
-
-      // Handle response to our requests
-      if (message.id && this.pendingResponses.has(message.id)) {
-        const { resolve } = this.pendingResponses.get(message.id)
-        this.pendingResponses.delete(message.id)
-        resolve(message.data)
-        return
-      }
-
 
       switch (message.type) {
         case 'blapy_command':
           this._handleBlapyCommand(message)
           break
 
-        case 'data_request':
-          this._handleDataRequest(message)
-          break
-
         case 'broadcast':
           this._handleBroadcast(message)
           break
+
+        default:
+          this.blapy.logger.info(`Unhandled message type: ${message.type}`, 'WebSocket')
       }
 
       // Trigger message callbacks
       this._triggerCallbacks('onMessage', message)
 
     } catch (error) {
-      this?.blapy?.logger?.error(`Error parsing message: ${error.message}`, 'WebSocket')
+      this.blapy.logger.error(`Error parsing message: ${error.message}`, 'WebSocket')
     }
   }
 
@@ -359,7 +252,7 @@ class BlapySocket {
    */
   _handleBlapyCommand(message) {
     if (!this.blapy) {
-      this?.blapy?.logger?.error('No Blapy instance attached, cannot execute command', 'WebSocket')
+      this.blapy.logger.error('No Blapy instance attached, cannot execute command', 'WebSocket')
       return
     }
 
@@ -367,13 +260,9 @@ class BlapySocket {
 
     // Security check
     if (!this.options.allowedCommands.includes(command)) {
-      this?.blapy?.logger?.warn(`Command not allowed: ${command}`, 'WebSocket')
+      this.blapy.logger.warn(`Command not allowed: ${command}`, 'WebSocket')
       return
     }
-
-    this?.blapy?.logger?.info(`Executing Blapy command: ${command}`, 'WebSocket')
-
-    console.log("ouais?")
 
     try {
       switch (command) {
@@ -400,67 +289,11 @@ class BlapySocket {
           break
 
         default:
-          this?.blapy?.logger?.warn(`Unknown Blapy command: ${command}`, 'WebSocket')
+          this.blapy.logger.warn(`Unknown Blapy command: ${command}`, 'WebSocket')
       }
     } catch (error) {
-      this?.blapy?.logger?.error(`Error executing command: ${error.message}`, 'WebSocket')
-    }
-  }
-
-  /**
-   * Handle data requests from remote clients.
-   *
-   * @private
-   * @param {Object} message - The data request message.
-   */
-  _handleDataRequest(message) {
-    if (!this.blapy) {
-      this._sendMessage({
-        type: 'data_response',
-        id: message.id,
-        error: 'No Blapy instance available',
-      })
-      return
-    }
-
-    const { blockName } = message
-
-    try {
-      // Find the requested block
-      const block = this.blapy.container.querySelector(`[data-blapy-container-name="${blockName}"]`)
-
-      if (!block) {
-        this._sendMessage({
-          type: 'data_response',
-          id: message.id,
-          error: `Block not found: ${blockName}`,
-        })
-        return
-      }
-
-      // Extract block data
-      const blockData = {
-        name: blockName,
-        content: block.innerHTML,
-        attributes: Array.from(block.attributes).reduce((acc, attr) => {
-          acc[attr.name] = attr.value
-          return acc
-        }, {}),
-        timestamp: Date.now(),
-      }
-
-      this._sendMessage({
-        type: 'data_response',
-        id: message.id,
-        data: blockData,
-      })
-
-    } catch (error) {
-      this._sendMessage({
-        type: 'data_response',
-        id: message.id,
-        error: error.message,
-      })
+      this.blapy.logger.error(error)
+      this.blapy.logger.error(`Error executing command: ${error.message}`, 'WebSocket')
     }
   }
 
@@ -471,46 +304,9 @@ class BlapySocket {
    * @param {Object} message - The broadcast message.
    */
   _handleBroadcast(message) {
-    this?.blapy?.logger?.info('Received broadcast message', 'WebSocket')
-
     // Trigger custom event for broadcast
     if (this.blapy) {
       this.blapy.trigger('BlapySocket_Broadcast', message.data)
-    }
-  }
-
-  /**
-   * Send a message through the WebSocket.
-   *
-   * @private
-   * @param {Object} message - Message to send.
-   */
-  _sendMessage(message) {
-    if (this.ws && this.isConnected) {
-      try {
-        this.ws.send(JSON.stringify(message))
-        this?.blapy?.logger?.info(`Message sent: ${message.type}`, 'WebSocket')
-      } catch (error) {
-        this?.blapy?.logger?.error(`Error sending message: ${error.message}`, 'WebSocket')
-      }
-    }
-  }
-
-  /**
-   * Flush queued messages when connection is restored.
-   *
-   * @private
-   */
-  _flushMessageQueue() {
-    if (this.messageQueue.length > 0) {
-      this?.blapy?.logger?.info(`Sending ${this.messageQueue.length} queued messages`, 'WebSocket')
-
-      const queue = [...this.messageQueue]
-      this.messageQueue = []
-
-      queue.forEach(({ message, expectResponse }) => {
-        this.send(message, expectResponse)
-      })
     }
   }
 
@@ -525,16 +321,16 @@ class BlapySocket {
     this.reconnectAttempts++
     const delay = this.options.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1)
 
-    this?.blapy?.logger?.info(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`, 'WebSocket')
+    this.blapy.logger.info(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`, 'WebSocket')
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null
-      this?.blapy?.logger?.info(`Reconnection attempt ${this.reconnectAttempts}`, 'WebSocket')
+      this.blapy.logger.info(`Reconnection attempt ${this.reconnectAttempts}`, 'WebSocket')
 
       this.connect().then(() => {
         this._triggerCallbacks('onReconnect', { attempt: this.reconnectAttempts })
       }).catch((error) => {
-        this?.blapy?.logger?.error(`Reconnection attempt ${this.reconnectAttempts} failed: ${error.message}`, 'WebSocket')
+        this.blapy.logger.error(`Reconnection attempt ${this.reconnectAttempts} failed: ${error.message}`, 'WebSocket')
       })
     }, delay)
   }
@@ -564,7 +360,7 @@ class BlapySocket {
         try {
           callback(data)
         } catch (error) {
-          this?.blapy?.logger?.error(`Error in ${event} callback: ${error.message}`, 'WebSocket')
+          this.blapy.logger.error(`Error in ${event} callback: ${error.message}`, 'WebSocket')
         }
       })
     }
