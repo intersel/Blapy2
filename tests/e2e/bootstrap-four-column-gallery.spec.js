@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test('See if all blapy block are loaded', async ({ page }) => {
-  await page.goto('http://localhost:8080/demos/bootstrap-four-column-gallery/')
+  await page.goto('http://localhost/blapy2-final/blapy2/demos/bootstrap-four-column-gallery/')
 
   await page.waitForLoadState('networkidle')
 

@@ -13,23 +13,25 @@ const builds = [
     entry: 'src/browser-entry.js',
     fileName: 'blapy2.js',
     name: 'Blapy2',
-    description: 'Blapy2 runtime for browser usage, including Blapy V1 compatibility.'
+    description:
+      'Blapy2 runtime for browser usage, including Blapy V1 compatibility.',
   },
   {
     entry: 'src/modules/Blapymotion.js',
     fileName: 'Blapymotion.js',
     name: 'Blapymotion',
-    description: 'Blapy2 Animation module for browser usage.'
+    description: 'Blapy2 Animation module for browser usage.',
   },
   {
     entry: 'src/modules/BlapySocket.js',
     fileName: 'BlapySocket.js',
     name: 'BlapySocket',
-    description: 'Blapy2 Socket module for browser usage.'
-  }
+    description: 'Blapy2 Socket module for browser usage.',
+  },
 ]
 
-const createBanner = (config) => `
+const createBanner = (config) =>
+  `
 /**
  * -----------------------------------------------------------------------------------------
  * INTERSEL - 4 cité d'Hauteville - 75010 PARIS
@@ -72,7 +74,8 @@ export default defineConfig({
     },
   },
   test: {
-    environment: 'jsdom'
+    environment: 'jsdom',
+    exclude: ['tests/e2e/**'],
   },
   plugins: [
     banner(createBanner(defaultBuild)),
@@ -81,10 +84,10 @@ export default defineConfig({
       closeBundle: async () => {
         if (process.env.NODE_ENV === 'production') {
           const { build } = await import('vite')
-          
+
           for (let i = 1; i < builds.length; i++) {
             const buildConfig = builds[i]
-            
+
             await build({
               configFile: false,
               build: {
@@ -106,13 +109,11 @@ export default defineConfig({
                   external: [],
                 },
               },
-              plugins: [
-                banner(createBanner(buildConfig)),
-              ],
+              plugins: [banner(createBanner(buildConfig))],
             })
           }
         }
-      }
-    }
+      },
+    },
   ],
 })
