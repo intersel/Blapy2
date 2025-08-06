@@ -160,7 +160,9 @@ export class Blapy {
 
     this.optsIfsm.logLevel = this.opts.LogLevelIfsm
 
+
     if (typeof Blapymotion !== 'undefined') {
+      console.log("test")
       this.animation = new Blapymotion()
     }
 
@@ -726,6 +728,7 @@ export class Blapy {
 
                     } else {
                       // Plugin custom
+
                       let pluginUpdateFunction = myFSM.opts.theBlapy.animation[dataBlapyUpdate]
                       if (pluginUpdateFunction && typeof pluginUpdateFunction === 'function') {
                         if (aBlapyContainer.getAttribute('data-blapy-container-content') !== myContainer.getAttribute('data-blapy-container-content') ||
@@ -742,6 +745,7 @@ export class Blapy {
                     // Reconfigurer les intervalles et la visibilité
                     myFSM.opts.theBlapy.blapyBlocks.setBlapyUpdateIntervals()
                     myFSM.opts.theBlapy.setBlapyUpdateOnDisplay()
+                    myFSM.opts.theBlapy.setBlapyURL()
 
                     // Événements after content change
                     if (myFSM.opts.afterContentChange) {
@@ -847,11 +851,6 @@ export class Blapy {
    */
   setBlapyURL() {
     this.logger.info('Set blapyURL', 'router')
-
-    if (this.opts.enableRouter && this.router.isInitialized) {
-      this.logger.info('Router enabled - Navigo will handle blapy links', 'router')
-      return
-    }
 
     const blapyLinks = this.container.querySelectorAll('[data-blapy-link]')
 

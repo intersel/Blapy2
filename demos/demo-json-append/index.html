@@ -126,8 +126,8 @@
     </div>
   </body>
 
-  <script type="module">
-    import { Blapy } from '../../src/index.js'
+<script src="../../dist/blapy2.js"></script>
+<script>
     const blapy = document
       .querySelector('#myBlapy')
 
@@ -136,8 +136,10 @@
         logLevel: 3,
       })
 
+      console.log(blapy.Blapy().myFSM)
+
     blapy.addEventListener('Blapy_beforePageLoad', (event, error) => {
-      alert(`Blapy error ${event}`)
+      console.log(`Blapy`, event)
     })
 
     let taskCounter = 1
@@ -156,7 +158,7 @@
 
     document.getElementById('addTask').addEventListener('click', () => {
       const newTask = createTask()
-      blapy.myFSM.trigger('updateBlock', {
+      blapy.Blapy().myFSM.trigger('updateBlock', {
         html: JSON.stringify({
           'blapy-container-name': 'tasks',
           'blapy-container-content': 'new-task',
@@ -175,7 +177,7 @@
         newTasks.push(createTask())
       }
 
-      blapy.myFSM.trigger('updateBlock', {
+      blapy.Blapy().myFSM.trigger('updateBlock', {
         html: JSON.stringify({
           'blapy-container-name': 'tasks',
           'blapy-container-content': 'new-tasks-batch',
@@ -199,7 +201,7 @@
         resetTasks.push(createTask(`Reset Task #${i + 1}`))
       }
 
-      blapy.myFSM.trigger('updateBlock', {
+      blapy.Blapy().myFSM.trigger('updateBlock', {
         html: JSON.stringify({
           'blapy-container-name': 'tasks',
           'blapy-container-content': 'reset-tasks',

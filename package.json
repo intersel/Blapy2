@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "build": "vite build"
+    "build": "vite build",
+    "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\""
   },
   "keywords": [],
   "author": "",

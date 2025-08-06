@@ -878,7 +878,6 @@ export class TemplateManager {
 
         (async function() {
           for (const subContainer of subJsonBlocks) {
-            templateManager.logger.error(`Initializing sub-block: ${subContainer.getAttribute('data-blapy-container-name')}`, 'templateManager')
             await templateManager.setBlapyContainerJsonTemplate(subContainer, blapy)
           }
           blapy.myFSM.trigger('blapyJsonTemplatesIsSet')

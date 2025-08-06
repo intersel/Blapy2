@@ -11,13 +11,13 @@ $returnStr = <<<EOD
 		data-blapy-container-content="filters-Active"
 		>
 		<li>
-			<a href="php/getAll.php" data-blapy-link="true">All</a>
+			<a href="php/getAll.php" data-blapy-link>All</a>
 		</li>
 		<li>
-			<a href="php/getActive.php" data-blapy-link="true" class="selected">Active</a>
+			<a href="php/getActive.php" data-blapy-link class="selected">Active</a>
 		</li>
 		<li>
-			<a href="php/getCompleted.php" data-blapy-link="true">Completed</a>
+			<a href="php/getCompleted.php" data-blapy-link>Completed</a>
 		</li>
 </ul>
 EOD;
