@@ -67,7 +67,6 @@ export class Router {
 
         const container = this.blapy.container;
 
-        // Link manager
         container.addEventListener('click', (event) => {
             const link = event.target.closest('a[data-blapy-link]');
             if (!link) return;
@@ -100,10 +99,8 @@ export class Router {
         container.addEventListener('submit', (event) => {
             const form = event.target;
 
-            // Check if it's a Blapy form
             if (!form.matches('form[data-blapy-link]')) return;
 
-            // Active Blapy filtering
             const activeId = form.getAttribute('data-blapy-active-blapyid');
             if (activeId && activeId !== this.blapy.myUIObjectID) {
                 return;
@@ -111,24 +108,19 @@ export class Router {
 
             console.log("test")
 
-            event.preventDefault(); // Prevent native submission
+            event.preventDefault();
 
             this.logger.info(`Form submitted: ${form.action}`, 'router');
 
             console.log(form)
 
-            // Extracting form data
             const formData = this._extractFormData(form, event);
 
-            // Gestion de l'embeddingBlockId
             const embeddingBlockId = form.getAttribute('data-blapy-embedding-blockid');
             if (embeddingBlockId) {
                 formData.embeddingBlockId = embeddingBlockId;
             }
 
-            console.log(formData)
-
-            // Déclenchement de l'événement Blapy
             this.blapy.myFSM.trigger('postData', {
                 aUrl: this._extractUrl(form.action),
                 params: formData,
@@ -146,14 +138,11 @@ export class Router {
     _initNavigoRouter() {
         this.logger.info('Initializing simple router (manual history management)', 'router');
 
-        // Pas de routes complexes, juste interception manuelle
         this._interceptBlapyLinks();
 
-        // Gestionnaire pour le bouton retour/forward du navigateur
         window.addEventListener('popstate', (event) => {
             this.logger.info('Popstate event detected', 'router');
 
-            // Déclencher le chargement de la page courante
             this.blapy.myFSM.trigger('loadUrl', {
                 aUrl: window.location.pathname + window.location.search,
                 params: {},
@@ -174,7 +163,6 @@ export class Router {
 
         this.logger.info(`Navigo route matched: ${method} ${url}`, 'router');
 
-        // Filtrage par blapy actif (équivalent au filtrage Sammy V1)
         const target = document.querySelector(`[href="${url}"], [action="${url}"]`);
         if (target) {
             const activeId = target.getAttribute('data-blapy-active-blapyid');
@@ -184,10 +172,8 @@ export class Router {
             }
         }
 
-        // Extraction de l'embeddingBlockId depuis l'URL (après #blapylink#)
         const embeddingBlockId = this._extractEmbeddingBlockId(url);
 
-        // Préparation des paramètres
         const params = {
             ...match.params,
             ...(match.data || {})
@@ -197,10 +183,8 @@ export class Router {
             params.embeddingBlockId = embeddingBlockId;
         }
 
-        // Nettoyage de l'URL (retirer #blapylink#xxx)
         const cleanUrl = this._cleanBlapyUrl(url);
 
-        // Déclenchement de l'événement approprié
         if (method === 'GET') {
             this.blapy.myFSM.trigger('loadUrl', {
                 aUrl: cleanUrl,
@@ -260,7 +244,6 @@ export class Router {
         if (!paramsAttr) return {};
 
         try {
-            // Utiliser JSON5 si disponible, sinon JSON standard
             const jsonParser = typeof JSON5 !== 'undefined' ? JSON5 : JSON;
             return jsonParser.parse(paramsAttr);
         } catch (e) {
@@ -276,12 +259,10 @@ export class Router {
         const formData = new FormData(form);
         const data = {};
 
-        // Convertir FormData en objet standard
         for (const [key, value] of formData.entries()) {
             data[key] = value;
         }
 
-        // Gérer le bouton de soumission (équivalent à la logique V1)
         if (event.submitter) {
             const submitter = event.submitter;
             if (submitter.name) {
@@ -304,7 +285,6 @@ export class Router {
         console.log(fullUrl)
         if (!fullUrl) return window.location.href;
 
-        // Retirer la partie hash si présente
         const hashIndex = fullUrl.indexOf('#');
         return hashIndex !== -1 ? fullUrl.substring(0, hashIndex) : fullUrl;
     }
@@ -369,7 +349,6 @@ export class Router {
             const href = link.getAttribute('href');
             if (!href || !href.includes('#blapylink')) return;
 
-            // Filtrage par blapy actif
             const activeId = link.getAttribute('data-blapy-active-blapyid');
             if (activeId && activeId !== this.blapy.myUIObjectID) return;
 
@@ -384,12 +363,10 @@ export class Router {
 
             const cleanUrl = this._cleanBlapyUrl(href);
 
-            // ✅ MISE À JOUR MANUELLE SIMPLE DE L'URL
             window.history.pushState({ blapy: true }, '', cleanUrl);
 
             this.logger.info(`Navigating to: ${cleanUrl}`, 'router');
 
-            // Déclencher l'événement Blapy
             this.blapy.myFSM.trigger('loadUrl', {
                 aUrl: cleanUrl,
                 params: this._filterAttributes(params),
