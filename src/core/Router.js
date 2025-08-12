@@ -106,13 +106,9 @@ export class Router {
                 return;
             }
 
-            console.log("test")
-
             event.preventDefault();
 
             this.logger.info(`Form submitted: ${form.action}`, 'router');
-
-            console.log(form)
 
             const formData = this._extractFormData(form, event);
 
@@ -282,7 +278,6 @@ export class Router {
      * Extrait l'URL propre (sans hash)
      */
     _extractUrl(fullUrl) {
-        console.log(fullUrl)
         if (!fullUrl) return window.location.href;
 
         const hashIndex = fullUrl.indexOf('#');

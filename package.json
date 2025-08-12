@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
+    "test:units": "vitest tests/units",
+    "test:e2e": "playwright test tests/e2e",
     "build": "vite build",
     "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\""
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "C.NELHOMME",
+  "license": "DonationWare",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@eslint/json": "^0.13.1",

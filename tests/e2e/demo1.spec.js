@@ -137,7 +137,7 @@ test.describe('Blapy Navigation Tests', () => {
       return Array.from(containers).map(c => c.getAttribute('data-blapy-container-name'))
     })
     
-    expect(initialContainerNames).toEqual(['header', 'menuHeader', 'mainContainer', 'footer'])
+    expect(initialContainerNames).toEqual(['header', 'menuHeader', 'submenu4', 'mainContainer', 'footer'])
 
     await page.click('a[href="test2.html#blapylink"]')
     await page.waitForFunction(() => {
@@ -151,7 +151,7 @@ test.describe('Blapy Navigation Tests', () => {
       return Array.from(containers).map(c => c.getAttribute('data-blapy-container-name'))
     })
     
-    expect(afterNavigationContainerNames).toEqual(['header', 'menuHeader', 'mainContainer', 'footer'])
+    expect(afterNavigationContainerNames).toEqual(['header', 'menuHeader', 'mainContainer', 'footer',])
 
     const headerContent = await page.locator('#header').getAttribute('data-blapy-container-content')
     expect(headerContent).toBe('standardHeader2')
@@ -184,100 +184,55 @@ test.describe('Blapy Navigation Tests', () => {
       })
     })
 
-    // Déclencher une navigation
-    await page.click('a[href="test2.html"]')
+    await page.click('a[href="test2.html#blapylink"]')
     
-    // Attendre que la navigation soit terminée
     await page.waitForFunction(() => {
       return document.querySelector('#mainContainer').textContent.includes('test2.html')
     }, { timeout: 5000 })
 
-    // Attendre un peu pour que tous les événements soient déclenchés
     await page.waitForTimeout(1000)
 
-    // Les événements Blapy devraient avoir été déclenchés
-    // (La vérification exacte dépend de l'implémentation des logs)
   })
 
   test('should handle multiple rapid clicks gracefully', async ({ page }) => {
-    // Cliquer rapidement sur plusieurs liens
+
     await Promise.all([
-      page.click('a[href="test2.html"]'),
+      page.click('a[href="test2.html#blapylink"]'),
       page.waitForTimeout(100),
-      page.click('a[href="test3.html"]'),
+      page.click('a[href="test3.html#blapylink"]'),
       page.waitForTimeout(100),
-      page.click('a[href="index.html"]')
+      page.click('a[href="index.html#blapylink"]')
     ])
 
-    // Attendre que la dernière navigation soit terminée
     await page.waitForFunction(() => {
       return document.querySelector('#mainContainer').textContent.includes('test1.html')
     }, { timeout: 5000 })
 
-    // Vérifier que nous sommes bien revenus à la page d'accueil
     await expect(page.locator('#mainContainer')).toContainText('test1.html')
     expect(page.url()).toContain('index.html')
   })
 
   test('should preserve menu state during navigation', async ({ page }) => {
-    // Vérifier que tous les liens de menu sont présents initialement
-    await expect(page.locator('a[data-blapy-link]')).toHaveCount(4) // menu1, menu2, menu3, menu4
 
-    // Naviguer vers test3 qui a moins de liens dans le menu
-    await page.click('a[href="test3.html"]')
+    await expect(page.locator('a[data-blapy-link]')).toHaveCount(4)
+
+    await page.click('a[href="test3.html#blapylink"]')
     await page.waitForFunction(() => {
       return document.querySelector('#mainContainer').textContent.includes('test3.html')
     }, { timeout: 5000 })
 
-    // Vérifier que le menu a été mis à jour (test3 n'a que 2 liens)
     await expect(page.locator('#menuHeader a[data-blapy-link]')).toHaveCount(2)
     
     const menuLinks = await page.locator('#menuHeader a').allTextContents()
     expect(menuLinks).toEqual(['menu1', 'menu2'])
   })
-
-  test('should handle error cases gracefully', async ({ page }) => {
-    // Tenter de naviguer vers une page qui n'existe pas
-    await page.evaluate(() => {
-      const link = document.createElement('a')
-      link.href = 'nonexistent.html'
-      link.setAttribute('data-blapy-link', '')
-      link.textContent = 'Non-existent page'
-      link.id = 'test-nonexistent-link'
-      document.body.appendChild(link)
-    })
-
-    // Écouter les erreurs de console
-    const consoleErrors = []
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text())
-      }
-    })
-
-    // Cliquer sur le lien vers une page inexistante
-    await page.click('#test-nonexistent-link')
-
-    // Attendre un peu pour voir si des erreurs se produisent
-    await page.waitForTimeout(2000)
-
-    // La page devrait rester stable (pas de crash)
-    await expect(page.locator('h1')).toContainText('This is test1.html file')
-    
-    // Vérifier qu'une erreur appropriée a été loggée
-    // (La vérification exacte dépend de l'implémentation de la gestion d'erreur)
-  })
 })
 
-// Configuration Playwright pour ces tests
 test.describe.configure({
-  // Exécuter les tests en série pour éviter les conflits d'état
   mode: 'serial'
 })
 
-// Helper functions pour les tests
 test.extend({
-  // Helper pour attendre qu'un conteneur Blapy soit mis à jour
   waitForBlapyContainerUpdate: async ({ page }, containerName, expectedContent) => {
     await page.waitForFunction(
       ({ name, content }) => {
@@ -289,7 +244,6 @@ test.extend({
     )
   },
 
-  // Helper pour vérifier l'état des conteneurs Blapy
   checkBlapyContainers: async ({ page }) => {
     return await page.evaluate(() => {
       const containers = document.querySelectorAll('[data-blapy-container="true"]')

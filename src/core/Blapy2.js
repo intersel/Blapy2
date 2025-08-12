@@ -162,7 +162,6 @@ export class Blapy {
 
 
     if (typeof Blapymotion !== 'undefined') {
-      console.log("test")
       this.animation = new Blapymotion()
     }
 
