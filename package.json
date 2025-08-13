@@ -7,7 +7,8 @@
     "test:units": "vitest tests/units",
     "test:e2e": "playwright test tests/e2e",
     "build": "vite build",
-    "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\""
+    "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\"",
+    "ws": "nodemon demos/websocket/server.js"
   },
   "keywords": [],
   "author": "C.NELHOMME",

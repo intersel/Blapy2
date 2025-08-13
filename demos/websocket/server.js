@@ -155,10 +155,8 @@ setInterval(() => {
     const broadcastData = {
       id: `broadcast_${Date.now()}`,
       type: 'lorem_message',
-      number: broadcastNumber,
       message: loremText,
       source: 'server',
-      clients_count: clients.size
     };
     
     const sentTo = broadcastMessage(broadcastData);

@@ -577,6 +577,11 @@ Triggered after JSON data has been successfully appended to a block using `data-
   - **totalItems**: total number of items now present in the block
   - **data**: the complete merged JSON data array after append operation
 
+## BlapySocket_Broadcast  
+
+Triggered when a WebSocket broadcast message is received by Blapy.
+This event is sent to the Blapy Block (or globally, depending on configuration) targeted by the broadcast message.
+
 ## Examples
 
 To listen to Blapy events, you may use the javascript `.addEventListener()` function as in this example:
@@ -1650,7 +1655,7 @@ Have a look to the full demonstration in [demos/demo_json_nested_blocks/index.ht
 
 - Verify your html return of the first ajax call. For instance, `<img src="" alt="">` will generate a second ajax call to index.html...
 
-## When routing is activated with Sammy, My URL does not work any more...
+## When routing is activated with Naivgo, My URL does not work any more...
 
 - It's generally a problem linked to base URL. YOu can fix it by setting a `<base>` html tag in your html head part:
 
