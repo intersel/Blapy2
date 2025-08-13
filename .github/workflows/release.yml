@@ -47,7 +47,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add dist/blapy2.js
+          git add dist/blapy2.js -f
+          git add dist/Blapymotion.js -f
+          git add dist/BlapySocket.js -f
           git commit -m "chore: build dist/blapy2.js [skip ci]" || echo "no changes"
           git push
 
