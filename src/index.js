@@ -24,9 +24,7 @@ export { TemplateManager } from './core/TemplateManager.js';
 export { Router } from './core/Router.js';
 export { BlapyBlock } from './core/BlapyBlock.js';
 
-import { enableJQueryLikeSyntax } from './modules/Compatibility.js';
-
-enableJQueryLikeSyntax();
+export * from './modules/Compatibility.js';
 
 import Blapy from './core/Blapy2.js';
 export default Blapy;

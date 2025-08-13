@@ -889,7 +889,164 @@ myAnimationFunction(oldContainer,newContainer) {}
 
 Have a look in the dist/Blapymotion.js and add your new functions in it inspired by the existing functions.
 
-# Blapy websockets plugin
+# BlapySocket Plugin
+
+The BlapySocket plugin enables real-time communication between your Blapy application and a WebSocket server, allowing for server-pushed updates to your Blapy blocks without polling.
+
+## Features
+
+- **Real-time Updates**: Receive instant updates from your server without polling
+- **Automatic Reconnection**: Built-in reconnection logic with configurable retry attempts
+- **Remote Command Execution**: Server can trigger Blapy events remotely
+- **Secure Communication**: Support for authentication and command whitelisting
+- **Event-driven Architecture**: Hook into WebSocket lifecycle events
+
+## Installation
+
+Include the BlapySocket module after Blapy:
+
+```html
+<script src="path/to/blapy2.js"></script>
+<script src="path/to/BlapySocket.js"></script>
+```
+
+## Basic Usage
+
+Configure WebSocket when initializing Blapy:
+
+```javascript
+const blapy = document.querySelector('#myBlapy').Blapy({
+  debug: true,
+  websocketOptions: {
+    url: 'ws://localhost:8080',
+    autoConnect: true,
+    clientId: 'myApp_001',
+  },
+})
+```
+
+| Option                 | Type    | Default                                                            | Description                              |
+| ---------------------- | ------- | ------------------------------------------------------------------ | ---------------------------------------- |
+| `url`                  | string  | `'ws://localhost:8080'`                                            | WebSocket server URL                     |
+| `autoConnect`          | boolean | `false`                                                            | Auto-connect on initialization           |
+| `reconnectDelay`       | number  | `3000`                                                             | Delay between reconnection attempts (ms) |
+| `maxReconnectAttempts` | number  | `10`                                                               | Maximum reconnection attempts            |
+| `allowedCommands`      | array   | `['postData', 'updateBlock', 'reloadBlock', 'loadUrl', 'trigger']` | Whitelisted server commands              |
+| `auth`                 | object  | `null`                                                             | Authentication data sent on connection   |
+| `clientId`             | string  | auto-generated                                                     | Unique client identifier                 |
+
+## Server-to-Client Commands
+
+The WebSocket server can send commands to update your Blapy application:
+
+### Update a Block
+
+```json
+{
+  "type": "blapy_command",
+  "command": "updateBlock",
+  "data": {
+    "html": "<div>New content</div>",
+    "params": {
+      "embeddingBlockId": "myBlock"
+    }
+  }
+}
+```
+
+### Load URL
+
+```json
+{
+  "type": "blapy_command",
+  "command": "loadUrl",
+  "data": {
+    "aUrl": "/api/data",
+    "params": {}
+  }
+}
+```
+
+### Post Data
+
+```json
+{
+  "type": "blapy_command",
+  "command": "postData",
+  "data": {
+    "aUrl": "/api/update",
+    "params": {
+      "id": 123,
+      "status": "active"
+    }
+  }
+}
+```
+
+## Broadcast Messages
+
+Listen for broadcast messages from the server:
+
+```js
+document
+  .querySelector('#myBlapy')
+  .addEventListener('BlapySocket_Broadcast', (event) => {
+    console.log('Broadcast received:', event.detail)
+  })
+```
+
+## Manual Connection Control
+
+```js
+// Connect manually
+blapy.websocket
+  .connect()
+  .then(() => {
+    console.log('Connected')
+  })
+  .catch((error) => {
+    console.error('Connection failed:', error)
+  })
+
+// Disconnect
+blapy.websocket.disconnect()
+
+// Check connection status
+const status = blapy.websocket.getStatus()
+console.log(status)
+// { connected: true, url: 'ws://localhost:8080', clientId: 'myApp_001', reconnectAttempts: 0 }
+```
+
+## Authentication
+
+Send authentication data when connecting:
+
+```js
+const blapy = document.querySelector('#myBlapy').Blapy({
+  websocketOptions: {
+    url: 'wss://secure-server.com',
+    auth: {
+      token: 'your-auth-token',
+      userId: 'user123',
+    },
+  },
+})
+```
+
+## Limitations
+
+The current implementation is receive-only (client cannot send messages to server except identification)
+Maximum payload size depends on browser and server configuration
+Requires browser support for WebSocket API
+
+## Browser Compatibility
+BlapySocket requires WebSocket API support:
+
+- Chrome 16+
+- Firefox 11+
+- Safari 7+
+- Edge 12+
+- Internet Explorer 10+
 
 # LIBRARY DEPENDENCIES
 
@@ -1509,17 +1666,17 @@ Hereafter, you can add this little script to automate that every A / Form tags b
 
 ```javascript
 // every new page load, will assure that every new links will have the "blapy-link" attribute
-document.body.addEventListener( "Blapy_PageReady", function(event,anError) {
-		$('#[[+BlapyApplicationId]]').find('a,form').attr('data-blapy-link','true');
-		var myBlapy = document.querySelector("myObjectID").myFSM.getFSM();//get the FSM working behind the scene for blapy
-		myBlapy[0].opts.theBlapy.setBlapyUrl(); // call the function that will make blapy handle the url links
-
-});
+document.body.addEventListener('Blapy_PageReady', function (event, anError) {
+  $('#[[+BlapyApplicationId]]').find('a,form').attr('data-blapy-link', 'true')
+  var myBlapy = document.querySelector('myObjectID').myFSM.getFSM() //get the FSM working behind the scene for blapy
+  myBlapy[0].opts.theBlapy.setBlapyUrl() // call the function that will make blapy handle the url links
+})
 ```
 
 Once in place, every url links will be considered as Blapy Links...
 
 ## When my template contains "img" tag with the name file defined by a placeholder, I've got a 404 error
+
 As the file is parsed as HTML, img tag will try to load the image that does not exist as the image name is not the placeholder name.
 
 To fix this, simply wrap your html template with the tag "xmp" which will neutralize html analysis.
@@ -1529,10 +1686,12 @@ To fix this, simply wrap your html template with the tag "xmp" which will neutra
 The jquery.appear object is not aware of a change in the display...
 
 In order to alert it, you can simulate a scroll on the window just after changing the display status of your block with :
+
 ```Javascript
 $(window).scroll();
 ```
 
 # Contact
+
 If you have any ideas, feedback, requests or bug reports, you can reach me at github@intersel.org,
 or via my website: http://www.intersel.fr
