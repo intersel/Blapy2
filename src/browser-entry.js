@@ -24,7 +24,6 @@ import { Router } from './core/Router.js';
 import { BlapyBlock } from './core/BlapyBlock.js';
 
 import * as BlapyCompat from './modules/Compatibility.js';
-if (BlapyCompat.enableJQueryLikeSyntax) BlapyCompat.enableJQueryLikeSyntax();
 
 window.Blapy2 = {
   Blapy,

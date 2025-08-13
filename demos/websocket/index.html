@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blapy WebSocket Demo</title>
-    <script src="../../src/modules/BlapySocket.js"></script>
+    <script src="../../dist/BlapySocket.js"></script>
     <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
     <script src="../../lib/mustache/mustache.js"></script>
     <script src="../../lib/navigo/index.js"></script>
@@ -14,90 +14,98 @@
     <script src="../../lib/iFSM/iFSM.js"></script>
     <script src="../../lib/json2html/json2html.js"></script>
     <style>
-      body { 
-        font-family: Arial, sans-serif; 
-        padding: 20px; 
-        background: #f5f5f5; 
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f5f5f5;
       }
-      .blapy-block { 
-        background: white; 
-        border: 2px solid #ddd; 
-        border-radius: 8px; 
-        margin: 20px 0; 
-        padding: 20px; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      .blapy-block {
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        margin: 20px 0;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
-      .block-title { 
-        color: #333; 
-        margin-bottom: 15px; 
-        border-bottom: 1px solid #eee; 
-        padding-bottom: 10px; 
+      .block-title {
+        color: #333;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
       }
-      .status { 
-        background: #e8f4fd; 
-        padding: 10px; 
-        border-left: 4px solid #2196F3; 
-        margin: 10px 0; 
+      .status {
+        background: #e8f4fd;
+        padding: 10px;
+        border-left: 4px solid #2196f3;
+        margin: 10px 0;
       }
-      .update-time { 
-        color: #666; 
-        font-size: 0.9em; 
-        font-style: italic; 
+      .update-time {
+        color: #666;
+        font-size: 0.9em;
+        font-style: italic;
       }
     </style>
   </head>
   <body id="myBlapy">
-    
     <h1>Blapy WebSocket Demo</h1>
     <p>The blocks below will be updated automatically via WebSocket.</p>
-    
-    <div class="blapy-block" 
-         data-blapy-container="true" 
-         data-blapy-container-name="welcome-block" 
-         data-blapy-update="update"
-         data-blapy-container-content="initial-1">
+
+    <div
+      class="blapy-block"
+      data-blapy-container="true"
+      data-blapy-container-name="welcome-block"
+      data-blapy-update="update"
+      data-blapy-container-content="initial-1"
+    >
       <div class="block-title">
         <h3>HTML Block (update)</h3>
       </div>
-      <div class="status">
-        Waiting for WebSocket update...
-      </div>
+      <div class="status">Waiting for WebSocket update...</div>
       <div class="update-time">Last update: Never</div>
     </div>
 
-    <div class="blapy-block" 
-         data-blapy-container="true" 
-         data-blapy-container-name="counter-block" 
-         data-blapy-update="force-update"
-         data-blapy-container-content="initial-2">
+    <div
+      class="blapy-block"
+      data-blapy-container="true"
+      data-blapy-container-name="counter-block"
+      data-blapy-update="force-update"
+      data-blapy-container-content="initial-2"
+    >
       <div class="block-title">
         <h3>Force Update Block</h3>
       </div>
-      <div class="status">
-        Waiting for WebSocket update...
-      </div>
+      <div class="status">Waiting for WebSocket update...</div>
       <div class="update-time">Last update: Never</div>
     </div>
 
     <script src="../../dist/blapy2.js"></script>
     <script>
       let myBlapy = document.querySelector('#myBlapy')
-      
+
       myBlapy.Blapy({
         debug: true,
-        logLevel: 3, 
+        logLevel: 3,
         websocketOptions: {
           url: 'ws://localhost:8081',
           autoConnect: true,
         },
-        afterContentChange: function(container) {
-          console.log('Block updated:', container.getAttribute('data-blapy-container-name'));
-        }
+        afterContentChange: function (container) {
+          console.log(
+            'Block updated:',
+            container.getAttribute('data-blapy-container-name')
+          )
+        },
       })
 
-      myBlapy.addEventListener('Blapy_PageReady', function() {
-        console.log('Blapy is ready, WebSocket should connect...');
-      });
+      myBlapy.addEventListener('Blapy_PageReady', function () {
+        console.log('Blapy is ready, WebSocket should connect...')
+      })
+
+      document
+        .querySelector('#myBlapy')
+        .addEventListener('BlapySocket_Broadcast', (event) => {
+          console.log('Broadcast reçu:', event.detail)
+        })
     </script>
   </body>
 </html>

@@ -11,4 +11,5 @@
   <script src="../../lib/json5/index.min.js"></script>
   <script src="../../lib/iFSM/iFSM.js"></script>
   <script type="text/javascript" src="../../lib/json2html/json2html.js"></script>
+  <script src="../../dist/Blapymotion.js"></script>
 </head>

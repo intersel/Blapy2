@@ -97,14 +97,14 @@
       data-blapy-container="true"
       data-blapy-container-name="tasks"
       data-blapy-update="json-append"
-      data-blapy-json-append-strategy="start"
+      data-blapy-json-append-strategy="end"
       data-blapy-json-max-items="10"
     >
       <xmp data-blapy-container-tpl="true" style="display: none">
         {{#.}}
         <div class="task">
           <div class="task-title">{{title}}</div>
-          <div class="task-time">Added at {{time}}</div>
+          <div class="task-time">Added at <b>{{time}}</b></div>
         </div>
         {{/.}}
         {{^.}}
@@ -185,7 +185,6 @@
         }),
         params: {
           blapyobjectid: 'myBlapy',
-          blapyaction: 'update',
         },
       })
     })
@@ -209,8 +208,6 @@
         }),
         params: {
           blapyobjectid: 'myBlapy',
-          blapyaction: 'update',
-          'force-update': 1,
         },
       })
 

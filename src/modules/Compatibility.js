@@ -38,39 +38,3 @@ HTMLElement.prototype.Blapy = function (options = {}) {
     this._blapyInstance = instance;
     return instance;
 };
-
-/**
- * Extension for compatibility with jQuery-like syntax.
- *
- * Allows usage like: $('#myId').Blapy(options)
- *
- * This function defines a global `$blapy` function that mimics
- * the jQuery selector behavior and attaches the Blapy instance
- * to the selected DOM element.
- *
- * @function enableJQueryLikeSyntax
- * @example
- * enableJQueryLikeSyntax();
- * $blapy('#myContainer').Blapy({ debug: true });
- */
-export function enableJQueryLikeSyntax() {
-    if (typeof window !== 'undefined' && !window.$blapy) {
-        window.$blapy = function (selector) {
-            const element = typeof selector === 'string'
-                ? document.querySelector(selector)
-                : selector;
-
-            if (!element) {
-                throw new Error(`Element not found: ${selector}`);
-            }
-
-            return {
-                Blapy: function (options = {}) {
-                    return element.Blapy(options);
-                }
-            };
-        };
-    }
-}
-
-export default { enableJQueryLikeSyntax };

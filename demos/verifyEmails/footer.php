@@ -16,7 +16,7 @@
 	var emailPos=0;
 	function oneTesting()
 	{
-		//get our next email to check
+		console.log(emailPos)
 		emailPos++;
 		emailToGet=$("#results tr:nth-child("+emailPos+") td:first-child").html();
 		$("#results tr:nth-child("+emailPos+") td:nth-child(2)").html("wait...");
@@ -26,19 +26,15 @@
 			return;
 		}
 
-		//call blapy with the result stored in #oneresult block
 		$( "#myBlapy" ).trigger('loadUrl',{aUrl:'verifyEmail.php?email='+emailToGet,params:{embeddingBlockId:'oneresult'}});
 	}
 
-	//activate the next search when last has been done
-	$(document).on('Blapy_afterContentChange','#oneresult', function(event,aBlock) {
-
+	document.querySelector("#oneresult").addEventListener('Blapy_afterContentChange', function(event,aBlock) {
+		console.log(event)
 		if (emailPos == 0) return; 
-		//update the general result table
 		$("#results tr:nth-child("+emailPos+") td:nth-child(2)").html($('#oneresult td:nth-child(2)').html());
 		$("#results tr:nth-child("+emailPos+") td:nth-child(3)").html($('#oneresult td:nth-child(3)').html());
 		
-		//call for the next test
 		oneTesting(); 
 	});
 
