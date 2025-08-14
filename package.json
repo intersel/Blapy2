@@ -10,8 +10,18 @@
     "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\"",
     "ws": "nodemon demos/websocket/server.js"
   },
-  "keywords": [],
-  "author": "C.NELHOMME",
+  "keywords": [
+    "singe-page-application",
+    "blapy2"
+  ],
+  "author": {
+    "name": "C.NELHOMME",
+    "url": "https://www.livinweb.fr/",
+    "email": "corentin.nelhomme@karibsen.fr"
+  },
+  "contributors": [
+    {"name": "E.Podvin", "url": "https://www.intersel.fr/"}
+  ],
   "license": "DonationWare",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
