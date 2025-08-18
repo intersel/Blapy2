@@ -11,7 +11,7 @@
  * @fileoverview Blapy2 Socket module for browser usage.
  * @see {@link https://github.com/intersel/blapy2}
  * @author Corentin NELHOMME - corentin.nelhomme@intersel.fr
- * @version 1.0.2
+ * @version 1.0.1
  * @license DonationWare - see https://github.com/intersel/blapy2/blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  */
