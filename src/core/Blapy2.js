@@ -372,7 +372,7 @@ export class Blapy {
                   }
                 })
                 .catch((error) => {
-                  this.trigger('errorOnLoadingPage', aURL + ': ' + error.message)
+                  this.trigger('errorOnLoadingPage', aURL + ': ' + error.toString())
                 })
             },
             next_state: 'ProcessPageChange',
@@ -774,7 +774,7 @@ export class Blapy {
           errorOnLoadingPage: {
             init_function: function (p, e, data) {
               if (this.opts.onErrorOnPageChange) this.opts.onErrorOnPageChange(data)
-              this.opts.theBlapy.trigger('Blapy_ErrorOnPageChange', [data])
+              this.opts.theBlapy.trigger('Blapy_ErrorOnPageChange', data)
             },
             next_state: 'PageReady',
           },
@@ -814,7 +814,7 @@ export class Blapy {
       return true
 
     } catch (error) {
-      this.logger.error(`Failed to initialize application: ${error.message}`, 'core')
+      this.logger.error(`Failed to initialize application: ${error.toString()}`, 'core')
       return false
     }
   }
@@ -978,7 +978,7 @@ export class Blapy {
           aHtmlSource = aHtmlSource.innerHTML
         }
       } catch (e) {
-        this.logger.warn(`embedHtmlPage: aHtmlSource is perhaps a pure json after all...?\n${aHtmlSource.toString()} ${e}`)
+        this.logger.warn(`embedHtmlPage: aHtmlSource is perhaps a pure json after all...?\n${aHtmlSource.toString()} ${e.toString()}`)
       }
     }
 

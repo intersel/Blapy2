@@ -44,7 +44,7 @@ const createBanner = (config) =>
  * @copyright Intersel 2015-${currentYear}
  * @fileoverview ${config.description}
  * @see {@link https://github.com/intersel/blapy2}
- * @author Corentin NELHOMME - corentin.nelhomme@intersel.fr
+ * @author E.Podvin - emmanuel.podvin@intersel.fr
  * @version ${version}
  * @license DonationWare - see https://github.com/intersel/blapy2/blob/master/LICENSE
  * -----------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 {
   "name": "blapy2",
-  "version": "1.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "ws": "nodemon demos/websocket/server.js"
   },
   "keywords": [],
-  "author": "C.NELHOMME",
+  "author": "E.PODVIN",
   "license": "DonationWare",
   "devDependencies": {
     "@eslint/js": "^9.32.0",

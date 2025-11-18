@@ -30,11 +30,8 @@ export class Utils {
    * console.log(decoded); // "Hello world!"
    */
   atou(b64) {
-    // return decodeURIComponent(escape(atob(b64)));
-    // return decodeURIComponent((atob(b64)));
-    const binary = atob(b64);
-    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-    return new TextDecoder("utf-8").decode(bytes);
+    //return decodeURIComponent((atob(b64)))
+    return decodeURIComponent(escape(atob(b64)));
   }
 
   /**
@@ -52,7 +49,7 @@ export class Utils {
    * console.log(encoded); // "SGVsbG8gd29ybGQh"
    */
   utoa(data) {
-    //return btoa(unescape(encodeURIComponent(data)));
-    return btoa(String.fromCharCode(...new TextEncoder().encode(data)))
+    //return btoa(String.fromCharCode(...new TextEncoder().encode(data)))
+    return btoa(unescape(encodeURIComponent(data)));
   }
 }

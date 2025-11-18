@@ -12,28 +12,28 @@ $max_articles = 10;
 >
 	<div class="row margin-b-2"	id="divB<?php echo $current_id?>">
 				<div class="col-sm-6 col-md-3">
-					<img class="img-responsive thumbnail" src="http://placehold.it/700x350" alt="">
+					<img class="img-responsive thumbnail" src="assets/img/img_750x350.png" alt="">
 					<div class="caption">
 						<h4><a href="#">Image title 1 - Row <?php echo $current_id?></a></h4>
 						<p>Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.</p>
 					</div>
 				</div>
 				<div class="col-sm-6 col-md-3">
-					<img class="img-responsive thumbnail" src="http://placehold.it/700x350" alt="">
+					<img class="img-responsive thumbnail" src="assets/img/img_750x350.png" alt="">
 					<div class="caption">
 						<h4><a href="#">Image title 2 - Row <?php echo $current_id?></a></h4>
 						<p>Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.</p>
 					</div>
 				</div>
 				<div class="col-sm-6 col-md-3">
-					<img class="img-responsive thumbnail" src="http://placehold.it/700x350" alt="">
+					<img class="img-responsive thumbnail" src="assets/img/img_750x350.png" alt="">
 					<div class="caption">
 						<h4><a href="#">Image title 3 - Row <?php echo $current_id?></a></h4>
 						<p>Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.</p>
 					</div>
 				</div>
 				<div class="col-sm-6 col-md-3">
-					<img class="img-responsive thumbnail" src="http://placehold.it/700x350" alt="">
+					<img class="img-responsive thumbnail" src="assets/img/img_750x350.png" alt="">
 					<div class="caption">
 						<h4><a href="#">Image title 4 - Row <?php echo $current_id?></a></h4>
 						<p>Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.</p>

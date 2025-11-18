@@ -33,12 +33,14 @@ As an "Hello world" example:
 <html>
   <head>
     <!-- External dependencies -->
-    <script src="../../lib/navigo/index.js"></script>
     <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-    <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
-    <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+    <script src="../../lib/mustache/mustache.js"></script>
+    <script src="../../lib/navigo/index.js"></script>
+    <script src="../../lib/iFSM/lib/jquery.attrchange.js"></script>
+    <script src="../../lib/iFSM/lib/jquery.dotimeout.js"></script>
+    <script src="../../lib/json5/index.min.js"></script>
     <script src="../../lib/iFSM/iFSM.js"></script>
-    
+    <script src="../../lib/json2html/json2html.js"></script>
     <script src="<myrootdir>/blapy2.js"></script>
   </head>
   <body id="myBlapy">
@@ -187,11 +189,14 @@ Well, just add at the end of your files this little script :
 
 ```javascript
 <!-- load of the external libraries needed by Blapy (provided in the package) -->
-    <script src="../../lib/navigo/index.js"></script>
     <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-    <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
-    <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
+    <script src="../../lib/mustache/mustache.js"></script>
+    <script src="../../lib/navigo/index.js"></script>
+    <script src="../../lib/iFSM/lib/jquery.attrchange.js"></script>
+    <script src="../../lib/iFSM/lib/jquery.dotimeout.js"></script>
+    <script src="../../lib/json5/index.min.js"></script>
     <script src="../../lib/iFSM/iFSM.js"></script>
+    <script src="../../lib/json2html/json2html.js"></script>
     <script src="<myrootdir>/blapy2.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -1689,6 +1694,29 @@ In order to alert it, you can simulate a scroll on the window just after changin
 
 ```Javascript
 $(window).scroll();
+```
+
+# How to locally compile blapy 'dist'
+
+## install npm
+npm is a package manager. see [https://www.npmjs.com/](https://www.npmjs.com/)
+
+```
+#on linux debian 
+sudo apt update
+sudo apt install nodejs npm
+```
+
+## install vite
+vite is used to compile blapy distribution
+It will be installed when calling 'npm install'
+```
+npm install
+```
+
+## run compilation
+```
+npm run build
 ```
 
 # Contact
