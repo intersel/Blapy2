@@ -10,8 +10,9 @@
  * @copyright Intersel 2015-2025
  * @fileoverview Main Blapy V2 class – primary manager of the module.
  * @see {@link https://github.com/intersel/blapy2}
- * @author Corentin NELHOMME - corentin.nelhomme@intersel.fr
- * @version 1.0.0
+ * @author Corentin NELHOMME - corentin.nelhomme@livinweb.fr
+ * @author Emmanuel PODVIN - emmanuel.podvin@livinweb.fr
+ * @version 2.1.1
  * @license DonationWare - see https://github.com/intersel/blapy2/blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  *
@@ -28,13 +29,9 @@
  * -----------------------------------------------------------------------------------------
  *
  *  Edit :
- * - 30/07/25 - C.NELHOMME - V1.0 - Creation of the base version
+ * - 2025/12/04 - E.PODVIN - V2.1.1 - fix bad typo for LogLevel to init the FSM options
  * - 06/08/25 - C.NELHOMME - V2.1 - Added websockets supports blapy can receive order by the websockets server.
- */
-
-/*@Todo
-  Test
-  Build module
+ * - 30/07/25 - C.NELHOMME - V1.0 - Creation of the base version
  */
 
 import { Logger } from './Logger.js'
@@ -158,7 +155,7 @@ export class Blapy {
     this.optsIfsm = this.opts
     this.optsIfsm.debug = this.opts.debugIfsm
 
-    this.optsIfsm.logLevel = this.opts.LogLevelIfsm
+    this.optsIfsm.LogLevel = this.opts.LogLevelIfsm
 
 
     if (typeof Blapymotion !== 'undefined') {
