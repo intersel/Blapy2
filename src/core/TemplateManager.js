@@ -5,12 +5,15 @@
  *
  * File : core/TemplateManager.js
  *
+ * Modifications:
+ * - 2025-11-28 - EPO - Parse the template even though there is no Mustache tags
  * -----------------------------------------------------------------------------------------
  * @copyright Intersel 2015-2025
  * @fileoverview Gestionnaire de templates pour Blapy2
  * @see {@link https://github.com/intersel/blapy2}
- * @author : Corentin NELHOMME — corentin.nelhomme@intersel.fr
- * @version : 1.0.0
+ * @author : Corentin NELHOMME — corentin.nelhomme@livinweb.fr
+ * @author : Emmanuel Podvin - emmanuel.podvin@livinweb.fr
+ * @version : 1.0.1
  * @license : DonationWare — see https://github.com/intersel//blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  **/
@@ -590,7 +593,7 @@ export class TemplateManager {
       )
 
       aJsonDataFunction.split(',').forEach((aFunctionName) => {
-        let previousJsonDataObj = jsonFeatures
+        let previousJsonDataObj = jsonFeatures;
         eval(
           'if (typeof ' +
           aFunctionName +
@@ -727,16 +730,14 @@ export class TemplateManager {
    * @returns {string} The generated HTML string.
    */
   _generateHtml(jsonDataObj, template, myContainer) {
-    let htmlTplContent = this._prepareTemplateContent(template.content)
-    let newHtml = ''
-    let parsed = false
-
-    const jsonData = JSON.stringify(jsonDataObj)
+    let htmlTplContent = this._prepareTemplateContent(template.content);
+    let newHtml = '';
+    let parsed = false;
 
     if (typeof Mustache != 'undefined') {
-      let mustacheStartDelimiter = '{{'
-      let mustacheEndDelimiter = '}}'
-      let newDelimiters = ''
+      let mustacheStartDelimiter = '{{';
+      let mustacheEndDelimiter = '}}';
+      let newDelimiters = '';
 
       if (
         myContainer.hasAttribute(
@@ -748,48 +749,49 @@ export class TemplateManager {
       ) {
         mustacheStartDelimiter = myContainer.getAttribute(
           'data-blapy-template-mustache-delimiterStart',
-        )
+        );
         mustacheEndDelimiter = myContainer.getAttribute(
           'data-blapy-template-mustache-delimiterEnd',
-        )
+        );
         newDelimiters =
-          '{{=' + mustacheStartDelimiter + ' ' + mustacheEndDelimiter + '=}}'
+          '{{=' + mustacheStartDelimiter + ' ' + mustacheEndDelimiter + '=}}';
       }
 
-      if (newDelimiters != '' || htmlTplContent.includes('{{')) {
+      // if (newDelimiters != '' || htmlTplContent.includes('{{')) {
         newHtml = Mustache.render(
           newDelimiters + mustacheStartDelimiter + '#.' + mustacheEndDelimiter +
           htmlTplContent +
           mustacheStartDelimiter + '/.' + mustacheEndDelimiter,
           jsonDataObj,
-        )
-        parsed = true
-      }
+        );
+      // }
+      parsed = true;
 
     }
 
     if (!parsed && typeof json2html != 'undefined') {
+      const jsonData = JSON.stringify(jsonDataObj);
 
       newHtml = json2html.transform(jsonData, {
         'tag': 'void',
         'html': htmlTplContent,
-      })
-      newHtml = newHtml.replace(/<.?void>/g, '')
-      parsed = true
+      });
+      newHtml = newHtml.replace(/<.?void>/g, '');
+      parsed = true;
     }
 
     if (!parsed) {
       this.logger.error(
         'no json parser loaded... need to include json2html or Mustache library! ',
         'templateManager',
-      )
+      );
       alert(
         'no json parser loaded... need to include "json2html" or "Mustache" library!',
-      )
+      );
       return ''
     }
 
-    return newHtml
+    return newHtml;
   }
 
   /**
