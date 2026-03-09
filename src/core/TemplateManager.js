@@ -6,6 +6,7 @@
  * File : core/TemplateManager.js
  *
  * Modifications:
+ * - 2026-03-09 - EPO - fix error output in logger.error + jsondataobject call in json2html
  * - 2025-11-28 - EPO - Parse the template even though there is no Mustache tags
  * -----------------------------------------------------------------------------------------
  * @copyright Intersel 2015-2025
@@ -160,14 +161,14 @@ export class TemplateManager {
         objects = objects.concat(this.getObjects(obj[i], key, val))
       } else
         //if key matches and value matches or if key matches and value is not passed (eliminating the case where key matches but passed value does not)
-      if (i == key && obj[i] == val || i == key && val == '') { //
-        objects.push(obj)
-      } else if (obj[i] == val && key == '') {
-        //only add if the object is not already in the array
-        if (objects.lastIndexOf(obj) == -1) {
+        if (i == key && obj[i] == val || i == key && val == '') { //
           objects.push(obj)
+        } else if (obj[i] == val && key == '') {
+          //only add if the object is not already in the array
+          if (objects.lastIndexOf(obj) == -1) {
+            objects.push(obj)
+          }
         }
-      }
     }
     return objects
   }
@@ -636,6 +637,7 @@ export class TemplateManager {
    * @returns {Object|Array} The JSON data with added Blapy index properties.
    */
   _addBlapyIndices(jsonDataObj) {
+    if (!jsonDataObj) return jsonDataObj;
     if (jsonDataObj.length) {
       for (let i = 0; i < jsonDataObj.length; i++) {
         if (jsonDataObj[i].blapyIndex == undefined) {
@@ -734,6 +736,16 @@ export class TemplateManager {
     let newHtml = '';
     let parsed = false;
 
+    if (!jsonDataObj) {
+      this.logger.warn(
+        'jsonDataObj is null... cannot generate html from template and so returning void html',
+        'templateManager._generateHtml',
+      )
+      return '';
+    }
+
+    const jsonData = JSON.stringify(jsonDataObj);
+
     if (typeof Mustache != 'undefined') {
       let mustacheStartDelimiter = '{{';
       let mustacheEndDelimiter = '}}';
@@ -758,21 +770,20 @@ export class TemplateManager {
       }
 
       // if (newDelimiters != '' || htmlTplContent.includes('{{')) {
-        newHtml = Mustache.render(
-          newDelimiters + mustacheStartDelimiter + '#.' + mustacheEndDelimiter +
-          htmlTplContent +
-          mustacheStartDelimiter + '/.' + mustacheEndDelimiter,
-          jsonDataObj,
-        );
+      newHtml = Mustache.render(
+        newDelimiters + mustacheStartDelimiter + '#.' + mustacheEndDelimiter +
+        htmlTplContent +
+        mustacheStartDelimiter + '/.' + mustacheEndDelimiter,
+        jsonDataObj,
+      );
       // }
       parsed = true;
 
     }
 
     if (!parsed && typeof json2html != 'undefined') {
-      const jsonData = JSON.stringify(jsonDataObj);
 
-      newHtml = json2html.transform(jsonData, {
+      newHtml = json2html.transform(jsonDataObj, {
         'tag': 'void',
         'html': htmlTplContent,
       });
@@ -783,12 +794,12 @@ export class TemplateManager {
     if (!parsed) {
       this.logger.error(
         'no json parser loaded... need to include json2html or Mustache library! ',
-        'templateManager',
+        'templateManager._generateHtml',
       );
       alert(
         'no json parser loaded... need to include "json2html" or "Mustache" library!',
       );
-      return ''
+      return '';
     }
 
     return newHtml;
@@ -878,7 +889,7 @@ export class TemplateManager {
 
         let templateManager = this;
 
-        (async function() {
+        (async function () {
           for (const subContainer of subJsonBlocks) {
             await templateManager.setBlapyContainerJsonTemplate(subContainer, blapy)
           }
