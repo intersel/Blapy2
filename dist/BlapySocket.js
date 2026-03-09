@@ -7,7 +7,7 @@
  * Blapy2 Socket module for browser usage.
  *
  * -----------------------------------------------------------------------------------------
- * @copyright Intersel 2015-2025
+ * @copyright Intersel 2015-2026
  * @fileoverview Blapy2 Socket module for browser usage.
  * @see {@link https://github.com/intersel/blapy2}
  * @author E.Podvin - emmanuel.podvin@intersel.fr
