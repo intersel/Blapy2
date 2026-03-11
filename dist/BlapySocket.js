@@ -11,7 +11,7 @@
  * @fileoverview Blapy2 Socket module for browser usage.
  * @see {@link https://github.com/intersel/blapy2}
  * @author E.Podvin - emmanuel.podvin@intersel.fr
- * @version 2.1.1
+ * @version 2.1.2
  * @license DonationWare - see https://github.com/intersel/blapy2/blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  */
