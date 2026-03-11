@@ -2,11 +2,12 @@
 
 > If you like Blapy2, I'll be pleased that you star it :-)
 
-Blapy2 is a modern ES6 JavaScript framework that helps you create and manage AJAX and single-page web applications (SPA) with minimal JavaScript coding. This is the modernized version of the original Blapy framework, built with ES6 modules, improved architecture, and enhanced developer experience.
+Blapy2 is a modern ES6 JavaScript framework that helps you create and manage AJAX and single-page web applications (SPA) with minimal JavaScript coding. It is the modernized version of the original Blapy framework, rebuilt with ES6 modules, an improved architecture, and an enhanced developer experience.
 
-Your web application is built the usual way of generating web pages (like with PHP or any standard CMS), and Blapy2 will transform it into a dynamic web application with ajaxified content updates.
+Your web application is built in the usual way, by generating web pages on the server (for example with PHP or any standard CMS), and Blapy2 transforms it into a dynamic web application with AJAX-powered content updates.
 
-Blapy2 speeds up your page loads as it only updates the requested content blocks rather than reloading entire pages, while maintaining full SEO compliance through normal URLs and server-side rendering.
+Blapy2 speeds up page loading by updating only the requested content blocks instead of reloading entire pages, while maintaining full SEO compatibility through standard URLs and server-side rendering.
+
 
 # Have a look on the "Hello World" demo and other demos
 
@@ -99,11 +100,11 @@ As an "Hello world" example:
   * [Problem resolutions](#problem-resolutions)
   * [Contact](#contact)
 
-  # Who may need it?
+# Who may need it?
 
-  Everyone using a CMS that generates web pages from a server and would like to transform his website to a client application-like website, ie that does not reload each page during the user navigation but only the needed blocks within the page.
+  Anyone using a CMS that generates web pages from a server and who would like to transform their website into a client-application-like website, i.e. one that does not reload each page during navigation but only updates the necessary blocks within the page.
 
-Everyone who...
+Anyone who...
 
 - would like to keep the way he builds websites but would like to have it behaves like an ajax web application.
 - gave up with Angular and other javascript frameworks to build web app... like me ;-)
@@ -114,22 +115,22 @@ Everyone who...
 
 # Why would I use that?!
 
-The concept of a web application getting data through REST Api with a client application that is doing the job of connecting the whole to build an application is quite a difficult job with a steep learning curve...
+The concept of a web application retrieving data through a REST API, with a client application assembling everything to build the final interface, is quite complex and usually comes with a steep learning curve.
 
-Whereas PHP -or whatever web server languages- websites built on a standard CMS are easier to handle... Any standard CMS does the page rendering job quite naturally for years... Except that it reloads pages when clicking a link... or it needs to develop ajax calls to dynamically update parts of the page...
+In contrast, PHP — or any other server-side language — used with a standard CMS makes website development much easier to handle. CMS platforms have been rendering pages naturally for years. The limitation is that pages are reloaded when a user clicks a link, unless additional AJAX calls are developed to update parts of the page dynamically.
 
-So, the idea is to provide a simple environment that don't change your habits when creating your website without having the hassle of creating ajax calls.
+The idea behind Blapy is to provide a simple environment that does not change your usual way of building a website, while avoiding the hassle of writing AJAX calls.
 
-The benefits of using Blapy?
+## The benefits of using Blapy
 
-- no difficult framework to understand how to build a web application
-- no REST or Ajax url end points to develop. Of course, you can do that if you like to have your application that way ;-)
-- no change in your habit to develop website: building the pages with Blapy don't change from the "static" usual way of doing a website, meaning you can continue to use your standard LAMP and CMS environement
-- configuration is simple and quite natural: it uses html5 "data" attributes to configure the Blapy configuration and there is quite nothing to do from an existing website :-)
-- the ajax things are done behind the scene with no js lines of code to implement them
-- the history of browsing is kept as any smart framework
-- completly compliant with any existing html/js code
-- SEO compliant as the server keeps the control on the application behaviour on the loaded pages and blocks, and so it is able to deliver correct contents to search engines as google.
+- No complex framework to learn in order to build a web application  
+- No REST or AJAX endpoints to develop. Of course, you can still use them if you want your application to work that way  
+- No change in your usual development workflow: building pages with Blapy is the same as building a traditional “static” website. You can continue using your standard LAMP and CMS environment  
+- Simple and natural configuration: it relies on HTML5 `data-*` attributes to configure Blapy, and very little setup is required for an existing website  
+- AJAX operations are handled behind the scenes, without writing any JavaScript code  
+- Browsing history is preserved, as with modern frameworks  
+- Fully compatible with existing HTML and JavaScript code  
+- SEO-friendly: the server remains in control of the application behavior and page rendering, allowing search engines such as Google to receive the correct content for indexing
 
 # How does it work?
 
