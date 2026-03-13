@@ -6,6 +6,7 @@
  * File : core/TemplateManager.js
  *
  * Modifications:
+ * - 2026-03-13 - EPO - fix test on mustache tags to parse the template with mustache
  * - 2026-03-09 - EPO - fix error output in logger.error + jsondataobject call in json2html
  * - 2025-11-28 - EPO - Parse the template even though there is no Mustache tags
  * -----------------------------------------------------------------------------------------
@@ -769,15 +770,15 @@ export class TemplateManager {
           '{{=' + mustacheStartDelimiter + ' ' + mustacheEndDelimiter + '=}}';
       }
 
-      // if (newDelimiters != '' || htmlTplContent.includes('{{')) {
-      newHtml = Mustache.render(
-        newDelimiters + mustacheStartDelimiter + '#.' + mustacheEndDelimiter +
-        htmlTplContent +
-        mustacheStartDelimiter + '/.' + mustacheEndDelimiter,
-        jsonDataObj,
-      );
-      // }
-      parsed = true;
+      if (newDelimiters != '' || htmlTplContent.includes('{{')) { //it means that we have mustache tags in the template, so we try to parse it with mustache even if no custom delimiter is set, to avoid to return the template without parsing it
+        newHtml = Mustache.render(
+          newDelimiters + mustacheStartDelimiter + '#.' + mustacheEndDelimiter +
+          htmlTplContent +
+          mustacheStartDelimiter + '/.' + mustacheEndDelimiter,
+          jsonDataObj,
+        );
+        parsed = true;
+      }
 
     }
 
