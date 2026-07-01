@@ -1,9 +1,11 @@
 old/**
 node_modules/**
-docker-compose.yml
 .idea/**
 dist/**
 test-results/**
 CLAUDE.md
 **/node_modules/
 dist/blapy2.js
+bun.lockb
+src/old
+/Blapy2/

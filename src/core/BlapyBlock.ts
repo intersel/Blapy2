@@ -5,7 +5,7 @@ export class BlapyBlock {
 
   private readonly blocks = new Map();
   private readonly intervalsSet = new Map();
-  private blapy : Blapy | null = null;
+  private blapy!: Blapy;
 
   constructor(private readonly logger: Logger) {
     this.logger.info('BlapyBlocks initialized', 'blocks');
@@ -46,7 +46,7 @@ export class BlapyBlock {
     let intervalIndex = 0;
 
     blocksWithInterval.forEach(block => {
-      const updateTime = Number.parseInt(block.dataset.blapyUpdateblockTime);
+      const updateTime = Number.parseInt(block.dataset.blapyUpdateblockTime ?? '');
       const href = block.dataset.blapyHref;
       const containerName = block.dataset.blapyContainerName;
       const noBlapyData = block.dataset.blapyNoblapydata;
@@ -84,5 +84,12 @@ export class BlapyBlock {
     this.logger.info(`Total intervals set: ${this.intervalsSet.size}`, 'blocks');
   }
 
+  /** Clears all update intervals and the block cache. */
+  public destroy() {
+    this.intervalsSet.forEach(interval => clearInterval(interval));
+    this.intervalsSet.clear();
+    this.blocks.clear();
+    this.logger.info('BlapyBlocks destroyed', 'blocks');
+  }
 
 }

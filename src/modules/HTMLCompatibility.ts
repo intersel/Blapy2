@@ -1,5 +1,5 @@
 import { Blapy } from '../core/Blapy';
-import { BlapyOptions } from '../types';
+import { BlapyOptions } from "#shared/types"
 
 HTMLElement.prototype.Blapy = function (this: HTMLElement, options: BlapyOptions = {}): Blapy {
   if (this._blapyInstance) {

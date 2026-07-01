@@ -1,4 +1,4 @@
-<script src="../../dist/blapy2.js"></script>
+<script src="../../dist/blapy.umd.js"></script>
 <script>
 
   document.addEventListener('DOMContentLoaded', () => {

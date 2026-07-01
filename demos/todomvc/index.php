@@ -10,13 +10,7 @@
   <link rel="stylesheet" href="node_modules/todomvc-common/base.css">
   <link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
 
-  <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-  <script src="../../lib/mustache/mustache.js"></script>
-  <script src="../../lib/navigo/index.js"></script>
-  <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
-  <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
-  <script src="../../lib/json5/index.min.js"></script>
-  <script src="../../lib/iFSM/iFSM.js"></script>
+  <!-- Blapy2 modern build: mustache/navigo/json5/json2html are bundled in, no jQuery needed -->
 
 </head>
 
@@ -25,12 +19,12 @@
   <header class="header">
     <h1>todos</h1>
     <input class="new-todo" placeholder="What needs to be done?" autofocus
-           onkeypress="if (event.keyCode==13) { $('#myBlapy').trigger('postData',{aUrl:'php/addAction.php',params:{actionName:$(this).val()}}); $(this).val('')}">
+           onkeypress="if (event.keyCode==13) { document.getElementById('myBlapy').Blapy().myFSM.trigger('postData',{aUrl:'php/addAction.php',params:{actionName:this.value}}); this.value=''}">
   </header>
   <section class="main">
     <input id="selectAllToggle" class="toggle-all" type="checkbox" data-blapy-container="true"
            data-blapy-container-name="selectAllToggle" data-blapy-container-content="selectAllToggle-Off"
-           onclick="$('#myBlapy').trigger('postData',{aUrl:'php/allCompleted.php',params:{toggleStatus:$(this).prop('checked')}})">
+           onclick="document.getElementById('myBlapy').Blapy().myFSM.trigger('postData',{aUrl:'php/allCompleted.php',params:{toggleStatus:this.checked}})">
     <label for="toggle-all">Mark all as complete</label>
     <ul class="todo-list" id="todo-list" data-blapy-container="true" data-blapy-container-name="todo-list"
         data-blapy-container-content="todo-list-void"></ul>
@@ -66,7 +60,7 @@
 </footer>
 
 
-<script src="../../dist/blapy2.js"></script>
+<script src="../../dist/blapy.umd.js"></script>
 <script>
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -76,28 +70,39 @@
     myBlapy.Blapy().myFSM.trigger('postData', { aUrl: 'php/resetActions.php' })
 
     var oriVal
-    $(document).on('dblclick', '#todo-list label', function() {
-      oriVal = $(this).text()
-      $(this).text('')
-      $('<input type=\'text\' style=\'font-size:22px\'>').appendTo(this).val(oriVal).focus()
+    document.addEventListener('dblclick', function(e) {
+      const label = e.target.closest('#todo-list label')
+      if (!label) return
+      oriVal = label.textContent
+      label.textContent = ''
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.style.fontSize = '22px'
+      label.appendChild(input)
+      input.value = oriVal
+      input.focus()
     })
-    $(document).on('keypress', '#todo-list label > input', function(event) {
-      if (event.which == 13) {
-        event.preventDefault()
-        $(this).trigger('focusout')
+    document.addEventListener('keypress', function(e) {
+      const input = e.target.closest('#todo-list label > input')
+      if (!input) return
+      if (e.which == 13) {
+        e.preventDefault()
+        input.blur() // fires focusout below
       }
     })
 
-    $(document).on('focusout', '#todo-list label > input', function() {
-      var $this = $(this)
-      var newText = $this.val() || oriVal
-      var actionId = $this.parent().attr('data-id')
-      $this.parent().text(newText)
-      $('#myBlapy').trigger('postData', {
+    document.addEventListener('focusout', function(e) {
+      const input = e.target.closest('#todo-list label > input')
+      if (!input) return
+      const newText = input.value || oriVal
+      const label = input.parentElement
+      const actionId = label.getAttribute('data-id')
+      label.textContent = newText
+      document.getElementById('myBlapy').Blapy().myFSM.trigger('postData', {
         aUrl: 'php/editAction.php',
         params: { actionName: newText, actionId: actionId },
       })
-      $this.remove() // Don't just hide, remove the element.
+      input.remove() // Don't just hide, remove the element.
     })
   })
 

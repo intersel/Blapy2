@@ -1,6 +1,6 @@
 import { Logger } from './Logger'
 import { Blapy } from './Blapy'
-import { BlapyRouterOptions, NavigationOptions, Primitive } from '../types/types'
+import { BlapyRouterOptions, NavigationOptions, Primitive } from '#shared/types'
 import Navigo from 'navigo'
 import JSON5 from 'json5'
 
@@ -9,6 +9,8 @@ export class Router {
   private readonly router: Navigo | null = null
   public isInitialized: boolean = false
   private readonly opts: BlapyRouterOptions
+  /** Removes every event listener attached by the router in one call (see destroy). */
+  private readonly abortController = new AbortController()
 
   constructor(private readonly logger: Logger, private readonly blapy: Blapy, opts: Partial<BlapyRouterOptions> = {}) {
     this.opts = {
@@ -100,7 +102,7 @@ export class Router {
         noBlapyData: link.dataset.blapyNoblapydata,
       })
 
-    })
+    }, { signal: this.abortController.signal })
 
     container.addEventListener('submit', (ev) => {
 
@@ -132,7 +134,7 @@ export class Router {
       })
 
 
-    })
+    }, { signal: this.abortController.signal })
   }
 
   private initNavigoRouter() {
@@ -152,7 +154,7 @@ export class Router {
         aObjectId: this.blapy.myUIObjectID,
       })
 
-    })
+    }, { signal: this.abortController.signal })
 
     this.isInitialized = true
     this.logger.info('Simple router initialized', 'router')
@@ -228,7 +230,7 @@ export class Router {
         noBlapyData: link.dataset.blapyNoblapydata,
       })
 
-    })
+    }, { signal: this.abortController.signal })
   }
 
   private extractEmbeddingBlockId(url: string): string {
@@ -260,5 +262,16 @@ export class Router {
     return hashIndex === -1 ? fullUrl : fullUrl.substring(0, hashIndex)
   }
 
+  /**
+   * Tears down the router: removes every event listener it attached (via the
+   * AbortController) and destroys the underlying navigo instance if any.
+   * Mirrors the old Router.destroy().
+   */
+  public destroy() {
+    this.abortController.abort()
+    this.router?.destroy()
+    this.isInitialized = false
+    this.logger.info('Router destroyed', 'router')
+  }
 
 }

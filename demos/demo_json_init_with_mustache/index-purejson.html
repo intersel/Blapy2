@@ -5,14 +5,7 @@
   <title>Json Example</title>
   <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
   <link rel="stylesheet" href="main.css" />
-  <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-  <script src="../../lib/mustache/mustache.js"></script>
-  <script src="../../lib/navigo/index.js"></script>
-  <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
-  <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
-  <script src="../../lib/json5/index.min.js"></script>
-  <script src="../../lib/iFSM/iFSM.js"></script>
-  <script type="text/javascript" src="../../lib/json2html/json2html.js"></script>
+  <!-- Blapy2 modern build: mustache/navigo/json5/json2html are bundled in, no jQuery needed -->
 </head>
 <body id="myBlapy">
 <div>
@@ -138,8 +131,8 @@
   <input name="template" type="radio" value="2ndTPL" checked>2ndTPL
 
   <script>
-    $('[name=template]').on('change', function() {
-      getJson($(this).val())
+    document.querySelectorAll('[name=template]').forEach((el) => {
+      el.addEventListener('change', function() { getJson(this.value) })
     })
   </script>
 </div>
@@ -163,7 +156,7 @@
 </div>
 </body>
 
-<script src="../../dist/blapy2.js"></script>
+<script src="../../dist/blapy.umd.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     let blapy = document.querySelector('#myBlapy')
@@ -177,7 +170,7 @@
             init_function: function(parameters, event, data) {
               console.log(this)
               if (data == undefined) data = 'nothing'
-              alert('alertUs called in ' + this.myUIObject.attr('id') + ' says: ' + data)
+              alert('alertUs called in ' + this.myUIObject.id + ' says: ' + data)
             },
           },
         },
@@ -197,8 +190,8 @@
             'params': {
               'embeddingBlockId': 'results',
               'templateId': tpl,
-              'firstname': $('select[name=firstname]', '#myForm').val(),
-              'lastname': $('input[name=lastname]:checked', '#myForm').val(),
+              'firstname': document.querySelector('#myForm select[name=firstname]').value,
+              'lastname': document.querySelector('#myForm input[name=lastname]:checked')?.value ?? '',
             },
           },
         )
@@ -206,20 +199,16 @@
         console.log('test')
         let params = { 'embeddingBlockId': 'results' }
 
-        jQuery.ajax({
-          type: 'GET',
-          dataType: 'json',
-          data: {
-            pureJson: 1,
-            firstname: $('select[name=firstname]', '#myForm').val(),
-            lastname: $('input[name=lastname]:checked', '#myForm').val(),
-          },
-          url: 'testForm.php',
-          crossDomain: true,
-          success: function(data, textStatus, jqXHR) {
-            document.querySelector('#myBlapy').Blapy().myFSM.trigger('updateBlock', { 'html': data, 'params': params })
-          },
+        const q = new URLSearchParams({
+          pureJson: '1',
+          firstname: document.querySelector('#myForm select[name=firstname]').value,
+          lastname: document.querySelector('#myForm input[name=lastname]:checked')?.value ?? '',
         })
+        fetch('testForm.php?' + q.toString())
+          .then((r) => r.text())
+          .then((data) => {
+            document.querySelector('#myBlapy').Blapy().myFSM.trigger('updateBlock', { 'html': data, 'params': params })
+          })
       }
     }
 

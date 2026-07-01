@@ -22,8 +22,8 @@ if (empty($getAction)) $getAction=null;
 $liTemplate = <<<EOD
 	<li data-id="[[actionId]]" class="[[completedStatus]]">
 		<div class="view">
-			<input class="toggle" type="checkbox" [[completedStatusChecked]] onclick="$('#myBlapy').trigger('loadUrl',{aUrl:'php/actionCompleted.php?actionId=[[actionId]]'})">
-			<label data-id="[[actionId]]">[[actionLabel]]</label><button class="destroy" onclick="$('#myBlapy').trigger('loadUrl',{aUrl:'php/deleteAction.php?actionId=[[actionId]]'})"></button>
+			<input class="toggle" type="checkbox" [[completedStatusChecked]] onclick="document.getElementById('myBlapy').Blapy().myFSM.trigger('loadUrl',{aUrl:'php/actionCompleted.php?actionId=[[actionId]]'})">
+			<label data-id="[[actionId]]">[[actionLabel]]</label><button class="destroy" onclick="document.getElementById('myBlapy').Blapy().myFSM.trigger('loadUrl',{aUrl:'php/deleteAction.php?actionId=[[actionId]]'})"></button>
 		</div>
 	</li>
 EOD;
@@ -107,7 +107,7 @@ if ($aVarArray['numberOfLeftItems'] != $aVarArray['numberOfItems'])
 				data-blapy-container="true" 
 				data-blapy-container-name="showClear"
 				data-blapy-container-content="showClear-True"
-				onclick="$('#myBlapy').trigger('loadUrl',{aUrl:'php/clearCompleted.php'});">Clear completed</button>'
+				onclick="document.getElementById('myBlapy').Blapy().myFSM.trigger('loadUrl',{aUrl:'php/clearCompleted.php'});">Clear completed</button>'
 EOD;
 else 
 	$returnStr .= <<<EOD

@@ -1,5 +1,5 @@
 import { Logger } from './Logger'
-import { AjaxOptions } from '../types/types'
+import { AjaxOptions } from '#shared/types'
 import JSON5 from 'json5'
 
 export class AjaxService {
@@ -83,7 +83,7 @@ export class AjaxService {
     } catch (err) {
       clearTimeout(id)
 
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         this.logger?.error(`AJAX Timeout: ${method} ${finalUrl}`)
         throw new Error(`Request timeout after ${timeout}ms`)
       }

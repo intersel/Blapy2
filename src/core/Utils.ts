@@ -1,7 +1,7 @@
 export class Utils {
   public atou(b64: string) : string {
     return decodeURIComponent(
-      atob(b64).split('').map(c => '%' + c.codePointAt(0).toString(16).padStart(2, '0')).join('')
+      atob(b64).split('').map(c => '%' + c.codePointAt(0)!.toString(16).padStart(2, '0')).join('')
     )
   }
 

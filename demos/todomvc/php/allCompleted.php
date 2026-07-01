@@ -13,7 +13,7 @@ $returnStr = <<<EOD
 		data-blapy-container="true"
 		data-blapy-container-name="selectAllToggle"
 		data-blapy-container-content="selectAllToggle-$toggleStatusName"
-		onclick="$('#myBlapy').trigger('postData',{aUrl:'php/allCompleted.php',params:{toggleStatus:$(this).prop('checked')}})">
+		onclick="document.getElementById('myBlapy').Blapy().myFSM.trigger('postData',{aUrl:'php/allCompleted.php',params:{toggleStatus:this.checked}})">
 EOD;
 
 include ('getTodo.php');

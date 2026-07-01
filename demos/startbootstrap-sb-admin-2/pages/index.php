@@ -542,15 +542,9 @@
     <script src="../dist/js/sb-admin-2.js"></script>
 
 
-    <!--  Blapy call -->
-    <script src="../../../lib/mustache/mustache.js"></script>
-    <script src="../../../lib/navigo/index.js"></script>
-    <script src="../../../lib/iFSM/extlib/jquery.attrchange.js"></script>
-    <script src="../../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
-    <script src="../../../lib/json5/index.min.js"></script>
-    <script src="../../../lib/iFSM/iFSM.js"></script>
-    <script type="text/javascript" src="../../../lib/json2html/json2html.js"></script>
-    <script src="../../../dist/blapy2.js"></script>
+    <!--  Blapy call — modern build (mustache/navigo/json5/json2html bundled in).
+          The theme's own jQuery/bootstrap/metisMenu/morris scripts above are kept. -->
+    <script src="../../../dist/blapy.umd.js"></script>
     <script>
 
         document.addEventListener("DOMContentLoaded", () => {

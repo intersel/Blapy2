@@ -1,32 +1,49 @@
 {
-  "name": "blapy2",
-  "version": "2.0.2",
-  "description": "",
+  "name": "klapy",
+  "version": "2.1.2",
+  "description": "klapy is an optimised blapy version by Karibsen",
   "main": "index.js",
   "scripts": {
     "test:units": "vitest tests/units",
     "test:e2e": "playwright test tests/e2e",
-    "build": "vite build",
-    "build:watch": "nodemon --watch src --ext js --exec \"pnpm vite build\"",
+    "build": "vite build && vite build --config vite.blapymotion.config.ts && vite build --config vite.blapysocket.config.ts",
+    "build:watch": "vite build --watch",
     "ws": "nodemon demos/websocket/server.js"
   },
   "keywords": [],
-  "author": "E.PODVIN",
+  "author": {
+    "name": "",
+    "url": "https://karibsen.fr"
+  },
   "license": "DonationWare",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@eslint/json": "^0.13.1",
     "@eslint/markdown": "^7.1.0",
     "@playwright/test": "^1.54.2",
+    "@types/mustache": "^4.2.6",
     "eslint": "^9.32.0",
     "globals": "^16.3.0",
+    "jsdom": "latest",
     "playwright": "^1.54.2",
     "terser": "^5.43.1",
     "vite": "^7.0.6",
-    "vitest": "^3.2.4",
-    "jsdom": "latest"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@types/node": "^25.4.0",
+    "json5": "^2.2.3",
+    "mustache": "^4.2.0",
+    "navigo": "^8.11.1",
+    "node-json2html": "^3.3.3",
+    "typescript": "^5.9.3",
     "vite-plugin-banner": "^0.8.1"
-  }
+  },
+  "exports": {
+    "./shared": "./src/shared/*.js"
+  },
+  "imports": {
+    "#shared/*": "./src/shared/*/index.ts"
+  },
+  "packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321"
 }

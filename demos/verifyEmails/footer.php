@@ -1,4 +1,4 @@
-<script src="../../dist/blapy2.js"></script>
+<script src="../../dist/blapy.umd.js"></script>
 <script>
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -18,22 +18,22 @@
 	{
 		console.log(emailPos)
 		emailPos++;
-		emailToGet=$("#results tr:nth-child("+emailPos+") td:first-child").html();
-		$("#results tr:nth-child("+emailPos+") td:nth-child(2)").html("wait...");
-		if (!emailToGet) 
+		emailToGet=document.querySelector("#results tr:nth-child("+emailPos+") td:first-child")?.innerHTML;
+		if (!emailToGet)
 		{
 			emailPos=0;
 			return;
 		}
+		document.querySelector("#results tr:nth-child("+emailPos+") td:nth-child(2)").innerHTML="wait...";
 
-		$( "#myBlapy" ).trigger('loadUrl',{aUrl:'verifyEmail.php?email='+emailToGet,params:{embeddingBlockId:'oneresult'}});
+		document.querySelector("#myBlapy").Blapy().myFSM.trigger('loadUrl',{aUrl:'verifyEmail.php?email='+emailToGet,params:{embeddingBlockId:'oneresult'}});
 	}
 
 	document.querySelector("#oneresult").addEventListener('Blapy_afterContentChange', function(event,aBlock) {
 		console.log(event)
-		if (emailPos == 0) return; 
-		$("#results tr:nth-child("+emailPos+") td:nth-child(2)").html($('#oneresult td:nth-child(2)').html());
-		$("#results tr:nth-child("+emailPos+") td:nth-child(3)").html($('#oneresult td:nth-child(3)').html());
+		if (emailPos == 0) return;
+		document.querySelector("#results tr:nth-child("+emailPos+") td:nth-child(2)").innerHTML=document.querySelector('#oneresult td:nth-child(2)').innerHTML;
+		document.querySelector("#results tr:nth-child("+emailPos+") td:nth-child(3)").innerHTML=document.querySelector('#oneresult td:nth-child(3)').innerHTML;
 		
 		oneTesting(); 
 	});

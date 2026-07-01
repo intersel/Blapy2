@@ -1,4 +1,5 @@
-import { LoggerOptions } from '../types/types'
+import { LoggerOptions } from '#shared/types'
+import { PROJECT_NAME } from '#shared/constant'
 
 export class Logger {
 
@@ -18,15 +19,15 @@ export class Logger {
     this.alertError = alertError
   }
 
-  public error(message: string, service: string = 'blapy') {
+  public error(message: string, service: string = PROJECT_NAME) {
     this.log(message, service, 1)
   }
 
-  public warn(message: string, service: string = 'blapy') {
+  public warn(message: string, service: string = PROJECT_NAME) {
     this.log(message, service, 2)
   }
 
-  public info(message: string, service: string = 'blapy') {
+  public info(message: string, service: string = PROJECT_NAME) {
     this.log(message, service, 3)
   }
 
@@ -35,13 +36,13 @@ export class Logger {
 
     if (errorLevel >= 2 && !this.debug) return
 
-    if ((globalThis.window !== undefined && globalThis.console?.log) || typeof console !== 'undefined') {
+    if ((globalThis.window !== undefined && globalThis.console?.log()) || typeof console !== 'undefined') {
       switch (errorLevel) {
         case 1:
-          console.log(`%c[Klapy] %c${message} from ${service}`, 'background: red; padding: 2px 8px; margin-right: 10px;', 'black')
+          console.log(`%c[${PROJECT_NAME}] %c${message} from ${service}`, 'background: red; padding: 2px 8px; margin-right: 10px;', 'black')
           break
         case 2:
-          console.log(`%c[Klapy] %c${message} from ${service}`, 'background: orange; padding: 2px 8px; margin-right: 10px;', 'black')
+          console.log(`%c[${PROJECT_NAME}] %c${message} from ${service}`, 'background: orange; padding: 2px 8px; margin-right: 10px;', 'black')
           break
         case 3:
           console.log(`[Klapy] ${message} from ${service}`)

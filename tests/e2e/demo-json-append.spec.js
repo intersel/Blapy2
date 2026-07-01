@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Blapy2 Task List', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost/blapy2-final/blapy2/demos/demo-json-append/', {
+        await page.goto('http://localhost:8080/demos/demo-json-append/', {
             waitUntil: 'networkidle'
         })
     })

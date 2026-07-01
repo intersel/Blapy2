@@ -1,18 +1,19 @@
 import { Logger } from './Logger'
-import { AjaxOptions, BlapyOptions, NavigationOptions, StateData } from '../types/types'
+import { AjaxOptions, AnimationProvider, BlapyOptions, BlapySocketOptions, NavigationOptions, StateData } from '#shared/types'
 import { AjaxService } from './AjaxService'
 import { Utils } from './Utils'
 import { TemplateManager } from './TemplateManager'
 import { Router } from './Router'
 import { BlapyBlock } from './BlapyBlock'
 import { createFSM, FSMManager, type StateDefinition } from '../../lib/kFSM'
+import type BlapySocket from '../modules/BlapySocket'
 import JSON5 from 'json5'
 
 export class Blapy {
 
-  public container: HTMLElement | null = null
-  public myUIObject: HTMLElement | null
-  public myUIObjectID: string | null = null
+  public container: HTMLElement
+  public myUIObject: HTMLElement
+  public myUIObjectID: string
   public readonly logger: Logger
   private readonly defaults: BlapyOptions = {}
   private readonly opts: BlapyOptions
@@ -21,7 +22,18 @@ export class Blapy {
   private readonly templateManager: TemplateManager
   private readonly router: Router
   public readonly blapyBlocks: BlapyBlock
-  myFSM: FSMManager | null = null
+  myFSM!: FSMManager
+  /**
+   * Optional animation provider used by data-blapy-update="fadeInOut"/"rightOutIn".
+   * Undefined unless an `animation` provider (e.g. Blapymotion) is passed in options.
+   */
+  public readonly animation: AnimationProvider | null
+  /**
+   * Optional WebSocket service (receive-only). Non-null only when
+   * `websocketOptions` is passed AND a global `BlapySocket` class is loaded
+   * (via a separate `<script src="dist/BlapySocket.js">`).
+   */
+  public readonly websocket: BlapySocket | null
   private readonly optsIfsm: BlapyOptions
 
 
@@ -68,9 +80,18 @@ export class Blapy {
       LogLevelIfsm: 1,
       debugIfsm: false,
       theBlapy: this,
+      animation: null,
     }
 
     this.opts = { ...this.defaults, ...options }
+
+    // Animation is optional: use the provider passed in options if any, otherwise
+    // auto-detect a global `Blapymotion` class (loaded via a separate
+    // <script src="dist/BlapyMotion.js">). If neither is present, animations are
+    // simply disabled — the core never bundles Blapymotion.
+    const GlobalBlapymotion = (globalThis as { Blapymotion?: new () => AnimationProvider }).Blapymotion
+    this.animation = this.opts.animation
+      ?? (typeof GlobalBlapymotion === 'function' ? new GlobalBlapymotion() : null)
 
     this.optsIfsm = {
       ...this.opts,
@@ -81,13 +102,24 @@ export class Blapy {
     this.myUIObject = this.container
     this.myUIObjectID = this.container.id
 
-    this.myFSM = null
-
     //For IFSM
     this.opts.theBlapy = this
 
     this.utils = new Utils()
     this.logger = new Logger(this.opts)
+
+    // WebSocket is optional: instantiate only when websocketOptions is provided
+    // (non-empty) AND a global `BlapySocket` class is loaded (via a separate
+    // <script src="dist/BlapySocket.js">). Done after the logger exists since
+    // BlapySocket logs on construction. The core never bundles it.
+    const GlobalBlapySocket = (globalThis as { BlapySocket?: new (o: BlapySocketOptions, b: Blapy) => BlapySocket }).BlapySocket
+    this.websocket =
+      typeof GlobalBlapySocket === 'function' &&
+      this.opts.websocketOptions &&
+      Object.keys(this.opts.websocketOptions).length > 0
+        ? new GlobalBlapySocket({ ...this.opts.websocketOptions }, this)
+        : null
+
     this.ajaxService = new AjaxService(this.logger)
     this.templateManager = new TemplateManager(this.logger, this.ajaxService, this.utils)
     this.router = new Router(this.logger, this, {
@@ -106,7 +138,7 @@ export class Blapy {
     this.logger.info(`Blapy instance (#${this.myUIObjectID}) created`, 'Blapy2 constructor')
   }
 
-  public trigger(eventName: string, data: Object = null) {
+  public trigger(eventName: string, data: unknown = null) {
     this.logger.info(`[Sending event] ${eventName} - Diffused`)
     const event = new CustomEvent(eventName, {
       detail: data,
@@ -115,7 +147,19 @@ export class Blapy {
     this.myUIObject.dispatchEvent(event)
   }
 
-  public createBlapyBlock(aJsonObject) {
+  /**
+   * Tears down this Blapy instance: destroys the router (removing its event
+   * listeners), clears the block update intervals, and detaches the instance
+   * reference from the element so it can be re-initialised cleanly.
+   */
+  public destroy() {
+    this.logger.info(`Destroying Blapy instance (#${this.myUIObjectID})`, 'core')
+    this.router.destroy()
+    this.blapyBlocks.destroy()
+    delete this.myUIObject._blapyInstance
+  }
+
+  public createBlapyBlock(aJsonObject: Record<string, any>) {
 
     if (!aJsonObject['blapy-container-name']) {
       this.logger.info('createBlapyBlock: Error on received json where blapy-container-name is not defined!\nPerhaps it\'s pure json not defined as such in Blapy block configuration (cf. data-blapy-template-init-purejson)...\n' + JSON.stringify(aJsonObject))
@@ -135,7 +179,7 @@ export class Blapy {
     this.logger.info('InitApplication', 'core')
 
     try {
-      const states: StateDefinition = {
+      const states: StateDefinition<StateData> = {
         PageLoaded: {
           enterState: {
             init_function: function(this) {
@@ -257,11 +301,11 @@ export class Blapy {
                 requestOptions.body = params
               }
 
-              blapy.ajaxService.request(aURL, requestOptions)
+              blapy.ajaxService.request<string | Element>(aURL ?? '', requestOptions)
                 .then((response: string | Element) => {
                   if (response) {
                     if (typeof response === 'object') response = JSON.stringify(response)
-                    if (aembeddingBlockId) response = blapy.embedHTMLPage(response, aembeddingBlockId)
+                    if (aembeddingBlockId) response = blapy.embedHTMLPage(response, aembeddingBlockId) ?? response
                     this.trigger('pageLoaded', { htmlPage: response, params })
                   }
                 })
@@ -300,7 +344,7 @@ export class Blapy {
                 if (container) container.dataset.blapyTemplateDefaultId = data.params.templateId
               }
 
-              if (aembeddingBlockId) data.html = blapy.embedHTMLPage(data.html, aembeddingBlockId)
+              if (aembeddingBlockId) data.html = blapy.embedHTMLPage(data.html ?? '', aembeddingBlockId)
 
               this.trigger('pageLoaded', { htmlPage: data.html, params: data.params })
             },
@@ -309,8 +353,7 @@ export class Blapy {
           reloadBlock: {
             init_function: function(this, p, e, data: Partial<StateData>) {
               const blapy = this.opts.theBlapy as Blapy
-              let params: any = {}
-              if (data) params = data.params
+              const params: Record<string, any> = data.params ?? {}
 
               if (('embeddingBlockId' in params) && (!params.embeddingBlockId)) {
                 blapy.logger.info('[reloadBlock on ' + blapy.myUIObjectID + '] embeddingBlockId is undefined!')
@@ -329,7 +372,7 @@ export class Blapy {
               const blapy = this.opts.theBlapy as Blapy
 
               let pageContent: any = data.htmlPage
-              const params = data.params
+              const params: Record<string, any> = data.params ?? {}
               const aObjectId = params.blapyobjectid
               const jsonFeatures = JSON5
 
@@ -382,7 +425,7 @@ export class Blapy {
                         }
                       }
                     } catch (err) {
-                      blapy.logger.error(err)
+                      blapy.logger.error(String(err))
                       continue
                     }
 
@@ -516,7 +559,7 @@ export class Blapy {
                           : [...currentData, newJsonData]
                       }
 
-                      const maxItems = Number.parseInt(myContainer.dataset.blapyJsonMaxItems)
+                      const maxItems = Number.parseInt(myContainer.dataset.blapyJsonMaxItems ?? '')
                       if (maxItems > 0 && mergedData.length > maxItems) {
                         mergedData = appendStrategy === 'start'
                           ? mergedData.slice(0, maxItems)
@@ -566,10 +609,11 @@ export class Blapy {
                       await blapy.templateManager.processJsonUpdate(tmpContainer, myContainer, aBlapyContainer, blapy)
 
                     } else {
-                      // Plugin custom (animation)
-                      const animation = (blapy as any).animation
-                      const pluginUpdateFunction = animation?.[dataBlapyUpdate]
-                      if (pluginUpdateFunction && typeof pluginUpdateFunction === 'function') {
+                      // Animation update (e.g. fadeInOut/rightOutIn). The animation
+                      // provider (Blapymotion) is optional: if it isn't loaded, fall
+                      // back to a plain update so the content still changes.
+                      const pluginUpdateFunction = blapy.animation?.[dataBlapyUpdate]
+                      if (typeof pluginUpdateFunction === 'function') {
                         if (
                           aBlapyContainer.dataset.blapyContainerContent !== myContainer.dataset.blapyContainerContent ||
                           params['force-update'] == 1 ||
@@ -578,7 +622,14 @@ export class Blapy {
                           pluginUpdateFunction(myContainer, aBlapyContainer)
                         }
                       } else {
-                        blapy.logger.error(`${dataBlapyUpdate} does not exist`)
+                        if (!blapy.animation) {
+                          blapy.logger.warn(`data-blapy-update="${dataBlapyUpdate}" needs the optional Blapymotion module (load <script src="dist/BlapyMotion.js"> or pass an \`animation\` provider); updating without animation`)
+                        } else {
+                          blapy.logger.error(`animation "${dataBlapyUpdate}" does not exist on the animation provider; updating without animation`)
+                        }
+                        // Plain fallback update
+                        myContainer.outerHTML = aBlapyContainer.outerHTML
+                        myContainer = aBlapyContainer
                       }
                     }
 
@@ -638,7 +689,7 @@ export class Blapy {
         this.deepMerge(states, this.opts.fsmExtension)
       }
 
-      this.myFSM = createFSM(this.myUIObject, states, {
+      this.myFSM = createFSM<StateData>(this.myUIObject, states, {
         ...this.optsIfsm,
         theBlapy: this,
       })
@@ -651,7 +702,7 @@ export class Blapy {
       return true
 
     } catch (error) {
-      this.logger.error(`Failed to initialize application: ${error.toString()}`, 'core')
+      this.logger.error(`Failed to initialize application: ${String(error)}`, 'core')
       return false
     }
   }
@@ -743,7 +794,7 @@ export class Blapy {
     }
   }
 
-  async setBlapyJsonTemplates(forceReload?: boolean, aEmbeddingBlock?: string, aTemplateId?) {
+  async setBlapyJsonTemplates(forceReload?: boolean, aEmbeddingBlock?: string, aTemplateId?: string) {
 
     this.logger.info('setBlapyJsonTemplates', 'core')
 
@@ -790,10 +841,10 @@ export class Blapy {
       return
     }
 
-    const observerCallback = (entries, observer) => {
+    const observerCallback = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          const el = entry.target
+          const el = entry.target as HTMLElement
           if (!Object.hasOwn(el.dataset, 'blapyAppear')) {
             el.dataset.blapyAppear = 'done'
 
@@ -850,11 +901,12 @@ export class Blapy {
         }
       } catch (e) {
 
-        this.logger.warn(`embedHtmlPage: aHtmlSource is perhaps a pure json after all...?\n${aHtmlSource.toString()} ${e.toString()}`)
+        this.logger.warn(`embedHtmlPage: aHtmlSource is perhaps a pure json after all...?\n${aHtmlSource.toString()} ${String(e)}`)
       }
     }
 
-    const encodedSource = '<xmp class="blapybin">' + this.utils.utoa(aHtmlSource) + '</xmp>'
+    const htmlString = typeof aHtmlSource === 'string' ? aHtmlSource : aHtmlSource.outerHTML
+    const encodedSource = '<xmp class="blapybin">' + this.utils.utoa(htmlString) + '</xmp>'
 
     const tempElement = document.createElement('div')
     tempElement.innerHTML = htmlBlapyBlock.outerHTML;
@@ -872,7 +924,7 @@ export class Blapy {
     return newBlock.outerHTML
   }
 
-  private deepMerge(target, source) {
+  private deepMerge(target: Record<string, any>, source: Record<string, any>) {
     for (const key in source) {
       if (
         source.hasOwnProperty(key) &&
@@ -892,4 +944,12 @@ export class Blapy {
   }
 
 
+}
+
+export function createBlapy(selector: string, options: BlapyOptions = {}) {
+  const element = document.querySelector<HTMLElement>(selector)
+  if (!element) {
+    throw new Error(`Blapy: no element found for selector "${selector}"`)
+  }
+  return element.Blapy(options)
 }

@@ -12,7 +12,7 @@ describe('BlapyBlock', () => {
       dummy: true
     }
 
-    blapyBlock = new BlapyBlock(logger, templateManager)
+    blapyBlock = new BlapyBlock(logger)
 
     mockBlapy = {
       myUIObject: document.createElement('div'),

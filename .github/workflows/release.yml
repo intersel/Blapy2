@@ -60,24 +60,26 @@ jobs:
       - name: Install jq (for reading version from package.json)
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Bump version + tag
+      - name: Create tag from package.json version
         id: version
         run: |
-          LAST_VERSION=$(git tag --sort=-v:refname | tail -n 1)
-          if [[ "$LAST_VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            MAJOR=${BASH_REMATCH[1]}
-            MINOR=${BASH_REMATCH[2]}
-            PATCH=${BASH_REMATCH[3]}
-            NEW_VERSION="v$(jq -r .version package.json)"
-          else
-            NEW_VERSION="v0.0.1"
-          fi
-          echo "New version: $NEW_VERSION"
+          VERSION=$(jq -r .version package.json)
+          NEW_VERSION="v$VERSION"
+
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          git tag $NEW_VERSION
-          git push origin $NEW_VERSION
+
+          if git tag -l | grep -qx "$NEW_VERSION"; then
+            echo "Tag already exists: $NEW_VERSION"
+            echo "tag_created=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          git tag "$NEW_VERSION"
+          git push origin "$NEW_VERSION"
+          echo "tag_created=true" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
+        if: steps.version.outputs.tag_created == 'true'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.new_version }}

@@ -7,13 +7,8 @@
   <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="assets/main.css" />
-  <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-  <script src="../../lib/mustache/mustache.js"></script>
-  <script src="../../lib/navigo/index.js"></script>
-  <script src="../../lib/iFSM/extlib/jquery.attrchange.js"></script>
-  <script src="../../lib/iFSM/extlib/jquery.dotimeout.js"></script>
-  <script src="../../lib/json5/index.min.js"></script>
-  <script src="../../lib/iFSM/iFSM.js"></script>
+  <!-- Blapy2 modern build: mustache/navigo/json5/json2html are bundled in, no jQuery needed -->
+  <!-- Optional: load BlapyMotion to enable data-blapy-update="fadeInOut"/"rightOutIn". Blapy auto-detects it. -->
   <script src="../../dist/BlapyMotion.js"></script>
 </head>
 <body>

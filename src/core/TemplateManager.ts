@@ -2,9 +2,11 @@ import { Logger } from './Logger'
 import { AjaxService } from './AjaxService'
 import { Utils } from './Utils'
 import { Blapy } from './Blapy'
+import { BlapyTemplate } from '#shared/types'
 import JSON5 from 'json5'
 import Mustache from 'mustache'
-import * as json2html from 'json2html'
+import 'node-json2html/json2html.js'
+const json2html = (globalThis as any).json2html
 
 export class TemplateManager {
 
@@ -17,7 +19,7 @@ export class TemplateManager {
     this.logger.info('setBlapyContainerJsonTemplate', 'template manager')
     container.dataset.blapyUpdateRule = 'local'
 
-    let htmlTpl = Array.from(container.children).filter((child : HTMLElement) =>
+    let htmlTpl = (Array.from(container.children) as HTMLElement[]).filter((child : HTMLElement) =>
       Object.hasOwn(child.dataset, 'blapyContainerTpl'),
     );
 
@@ -133,7 +135,7 @@ export class TemplateManager {
     let aInitURL = container.dataset.blapyTemplateInit
     if (aInitURL) {
 
-      let aInitURL_Param: {} = container.dataset.blapyTemplateInitParams
+      let aInitURL_Param: any = container.dataset.blapyTemplateInitParams
       if (aInitURL_Param == undefined) {
         aInitURL_Param = {}
       } else if (typeof aInitURL_Param === 'string') {
@@ -170,8 +172,8 @@ export class TemplateManager {
   }
 
 
-  public getObjects(obj, key, val) {
-    let objects = []
+  public getObjects(obj: any, key: string, val: any): any[] {
+    let objects: any[] = []
     for (let i in obj) {
       if (!obj.hasOwnProperty(i)) continue
       if (typeof obj[i] == 'object') {
@@ -191,9 +193,9 @@ export class TemplateManager {
   }
 
   async processJsonUpdate(
-    tmpContainer,
+    tmpContainer : HTMLElement | null,
     myContainer : HTMLElement,
-    aBlapyContainer,
+    aBlapyContainer : HTMLElement,
     Blapy: Blapy,
   ) {
 
@@ -230,13 +232,13 @@ export class TemplateManager {
 
     } catch (error) {
       this.logger.error(
-        `Erreur dans processJsonUpdate: ${error.message}`,
+        `Erreur dans processJsonUpdate: ${error instanceof Error ? error.message : String(error)}`,
         'templateManager',
       )
     }
   }
 
-  private async extractAndParseJsonData(tmpContainer : HTMLElement, aBlapyContainer: HTMLElement) {
+  private async extractAndParseJsonData(tmpContainer : HTMLElement | null, aBlapyContainer: HTMLElement) {
     this.logger.info('_extractAndParseJsonData', 'templateManager')
 
     let jsonData = tmpContainer
@@ -252,7 +254,11 @@ export class TemplateManager {
       this.logger.warn('Premier parsing échoué, tentative d\'extraction HTML', 'templateManager')
 
       try {
-        jsonData = jsonData.innerHTML
+        // The JSON may be wrapped inside an HTML element (e.g. <xmp>…</xmp>);
+        // extract the inner content, mirroring the old jQuery `$(jsonData).html()`.
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = jsonData
+        jsonData = wrapper.firstElementChild?.innerHTML ?? jsonData
 
         const cleanedData = jsonData.replaceAll(/(\r\n|\n|\r)/g, '')
         const jsonDataObj = JSON5.parse(cleanedData)
@@ -266,7 +272,7 @@ export class TemplateManager {
     }
   }
 
-  private extractBlapyData(jsonDataObj: Object, container = null) {
+  private extractBlapyData(jsonDataObj: any, container: Element | null = null) {
     this.logger.info('_extractBlapyData', 'templateManager')
 
     if (jsonDataObj['blapy-data'] && jsonDataObj['blapy-container-name']) {
@@ -286,7 +292,7 @@ export class TemplateManager {
     return jsonDataObj
   }
 
-  private applyDataTransformations(jsonDataObj: [], myContainer: HTMLElement) {
+  private applyDataTransformations(jsonDataObj: any, myContainer: HTMLElement) {
     this.logger.info('_applyDataTransformations', 'templateManager')
     let processedData = jsonDataObj
 
@@ -304,8 +310,13 @@ export class TemplateManager {
   private getTemplate(myContainer : HTMLElement) {
 
 
-    let htmlTpl: NodeListOf<Element>;
-    let htmlAllTpl = myContainer.querySelectorAll('[data-blapy-container-tpl]')
+    // Only the container's OWN templates (direct children). Templates nested
+    // inside child blapy sub-blocks belong to those sub-blocks; including them
+    // here leaks them into the parent (and, via injectFinalHtml re-injecting
+    // template.allTemplates, accumulates them and breaks template resolution
+    // when data-blapy-template-default-id matches a leaked sub-block template).
+    let htmlAllTpl = myContainer.querySelectorAll(':scope > [data-blapy-container-tpl]')
+    let htmlTpl: NodeListOf<Element> = htmlAllTpl
 
     let htmlTplContent = ''
 
@@ -357,53 +368,69 @@ export class TemplateManager {
     }
   }
 
-  private generateHtml(jsonDataObj : Object, template, myContainer : HTMLElement) {
+  private generateHtml(jsonDataObj : any, template : BlapyTemplate, myContainer : HTMLElement) {
     let htmlTplContent = this.prepareTemplateContent(template.content);
     let newHtml = '';
     let parsed = false;
 
-    if (Mustache !== undefined) {
+    if (!jsonDataObj) {
+      this.logger.warn(
+        'jsonDataObj is null... cannot generate html from template and so returning void html',
+        'templateManager.generateHtml',
+      )
+      return '';
+    }
+
+    const hasCustomDelimiter =
+      Object.hasOwn(myContainer.dataset, 'blapyTemplateMustacheDelimiterstart') &&
+      myContainer.dataset.blapyTemplateMustacheDelimiterstart !== '';
+
+    // Mustache and json2html are both bundled, so the engine can't be picked from
+    // library presence anymore: choose it from the template's own syntax.
+    // json2html uses ${var}, Mustache uses {{var}}. A template with ${...} and no
+    // {{...}} (and no custom Mustache delimiter) is a json2html template.
+    const useJson2html =
+      !hasCustomDelimiter &&
+      htmlTplContent.includes('${') &&
+      !htmlTplContent.includes('{{');
+
+    if (Mustache !== undefined && !useJson2html) {
       let mustacheStartDelimiter = '{{';
       let mustacheEndDelimiter = '}}';
       let newDelimiters = '';
 
-      if (
-        Object.hasOwn(myContainer.dataset, 'blapyTemplateMustacheDelimiterstart') &&
-        myContainer.dataset.blapyTemplateMustacheDelimiterstart !== ''
-      ) {
-        mustacheStartDelimiter = myContainer.dataset.blapyTemplateMustacheDelimiterstart;
-        mustacheEndDelimiter = myContainer.dataset.blapyTemplateMustacheDelimiterend;
+      if (hasCustomDelimiter) {
+        mustacheStartDelimiter = myContainer.dataset.blapyTemplateMustacheDelimiterstart ?? '';
+        mustacheEndDelimiter = myContainer.dataset.blapyTemplateMustacheDelimiterend ?? '';
         newDelimiters =
           '{{=' + mustacheStartDelimiter + ' ' + mustacheEndDelimiter + '=}}';
       }
 
-      // if (newDelimiters != '' || htmlTplContent.includes('{{')) {
       newHtml = Mustache.render(
         newDelimiters + mustacheStartDelimiter + '#.' + mustacheEndDelimiter +
         htmlTplContent +
         mustacheStartDelimiter + '/.' + mustacheEndDelimiter,
         jsonDataObj,
       );
-      // }
       parsed = true;
 
     }
 
     if (!parsed && json2html !== undefined) {
-      const jsonData = JSON.stringify(jsonDataObj);
-
-      newHtml = json2html.transform(jsonData, {
-        'tag': 'void',
+      // node-json2html v3: render each item wrapped in a <void> tag, then strip
+      // the wrapper (the ${var} substitution happens inside `html`).
+      newHtml = json2html.render(jsonDataObj, {
+        '<>': 'void',
         'html': htmlTplContent,
       });
-      newHtml = newHtml.replaceAll(/<.?void>/g, '');
+      newHtml = newHtml.replaceAll(/<\/?void>/g, '');
       parsed = true;
     }
 
     if (!parsed) {
       this.logger.error(
         'no json parser loaded... need to include json2html or Mustache library! ',
-        'templateManager',
+        'templateManager.generateHtml',
       );
       alert(
         'no json parser loaded... need to include "json2html" or "Mustache" library!',
@@ -414,7 +441,7 @@ export class TemplateManager {
     return newHtml;
   }
 
-  private injectFinalHtml(generatedHtml : string, myContainer : HTMLElement, blapy : Blapy, template) {
+  private injectFinalHtml(generatedHtml : string, myContainer : HTMLElement, blapy : Blapy, template : BlapyTemplate) {
     let newHtml = generatedHtml
 
     if (Object.hasOwn(myContainer.dataset, 'blapyTemplateHeader')) {
@@ -435,9 +462,12 @@ export class TemplateManager {
       const wrapTemplate = myContainer.dataset.blapyTemplateWrap
       const wrapperTemplate = document.createElement('div')
 
-      wrapperTemplate.innerHTML = wrapTemplate
-      wrapperTemplate.firstElementChild.innerHTML = newHtml
-      newHtml = wrapperTemplate.firstElementChild.outerHTML
+      wrapperTemplate.innerHTML = wrapTemplate ?? ''
+      const wrapped = wrapperTemplate.firstElementChild
+      if (wrapped) {
+        wrapped.innerHTML = newHtml
+        newHtml = wrapped.outerHTML
+      }
     }
 
     let tplList = ''
@@ -457,7 +487,7 @@ export class TemplateManager {
       } else {
         newScript.textContent = oldScript.textContent
       }
-      oldScript.parentNode.replaceChild(newScript, oldScript)
+      oldScript.parentNode?.replaceChild(newScript, oldScript)
     })
 
     setTimeout(() => {
@@ -482,7 +512,7 @@ export class TemplateManager {
     }, 0)
   }
 
-  private applyInitFromProperty(jsonDataObj : Object, myContainer : HTMLElement) {
+  private applyInitFromProperty(jsonDataObj : any, myContainer : HTMLElement) {
     this.logger.info('_applyInitFromProperty', 'templateManager')
     if (
       !Object.hasOwn(myContainer.dataset, 'blapyTemplateInitFromproperty') ||
@@ -517,7 +547,7 @@ export class TemplateManager {
     }
   }
 
-  private  applyInitSearch(jsonDataObj : [], myContainer : HTMLElement) {
+  private  applyInitSearch(jsonDataObj : any, myContainer : HTMLElement) {
     this.logger.info('_applyInitSearch', 'templateMnager')
     const initSearch = myContainer.dataset.blapyTemplateInitSearch
 
@@ -544,8 +574,8 @@ export class TemplateManager {
             return acc
         }, [])
 
-      jsonDataObj = jsonDataObj.filter((thing, index) => {
-        return index === jsonDataObj.findIndex(obj => {
+      jsonDataObj = jsonDataObj.filter((thing: any, index: number) => {
+        return index === jsonDataObj.findIndex((obj: any) => {
           return JSON.stringify(obj) === JSON.stringify(thing)
         })
       })
@@ -561,7 +591,7 @@ export class TemplateManager {
     }
   }
 
-  private applyProcessDataFunctions(jsonDataObj : [], myContainer: HTMLElement) {
+  private applyProcessDataFunctions(jsonDataObj : any, myContainer: HTMLElement) {
     this.logger.info('_applyProcessDataFunctions', 'templateManager')
     if (
       !Object.hasOwn(myContainer.dataset, 'blapyTemplateInitProcessdata') ||
@@ -608,7 +638,8 @@ export class TemplateManager {
     return jsonDataObj
   }
 
-  private addBlapyIndices(jsonDataObj : []) {
+  private addBlapyIndices(jsonDataObj : any) {
+    if (!jsonDataObj) return jsonDataObj
     if (jsonDataObj.length) {
       for (let i = 0; i < jsonDataObj.length; i++) {
         if (jsonDataObj[i].blapyIndex == undefined) {

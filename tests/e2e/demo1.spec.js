@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Blapy Navigation Tests', () => {
   
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost/blapy2-final/blapy2/demos/demo1/')
+    await page.goto('http://localhost:8080/demos/demo1/')
   
   })
 
