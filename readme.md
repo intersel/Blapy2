@@ -25,7 +25,16 @@ We invite you to have a deep look in the code source of the demos as they use qu
 
 # How to install
 
-As it is a modern ES6 framework... download the pre-built Blapy V2 files, include the required dependencies, then import the Blapy class and initialize your application... and you're done...
+The modern build is a single self-contained bundle: **`dist/blapy.umd.js`** ships
+its own dependencies (Mustache, Navigo, JSON5, json2html) and needs **no jQuery**.
+Include it, then initialize your application with `.Blapy()` — and you're done.
+
+Two optional modules are shipped as separate standalone scripts and are
+**auto-detected** by the core when loaded (see [Blapy animation plugin functions](#blapy-animation-plugin-functions)
+and [BlapySocket Plugin](#blapysocket-plugin)):
+
+- `dist/BlapyMotion.js` — content-transition animations (`fadeInOut`, `rightOutIn`)
+- `dist/BlapySocket.js` — real-time updates over WebSocket
 
 As an "Hello world" example:
 
@@ -33,16 +42,10 @@ As an "Hello world" example:
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- External dependencies -->
-    <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-    <script src="../../lib/mustache/mustache.js"></script>
-    <script src="../../lib/navigo/index.js"></script>
-    <script src="../../lib/iFSM/lib/jquery.attrchange.js"></script>
-    <script src="../../lib/iFSM/lib/jquery.dotimeout.js"></script>
-    <script src="../../lib/json5/index.min.js"></script>
-    <script src="../../lib/iFSM/iFSM.js"></script>
-    <script src="../../lib/json2html/json2html.js"></script>
-    <script src="<myrootdir>/blapy2.js"></script>
+    <!-- Optional: animations. Loading it enables data-blapy-update="fadeInOut"/"rightOutIn" -->
+    <!-- <script src="<myrootdir>/dist/BlapyMotion.js"></script> -->
+    <!-- Blapy core (Mustache/Navigo/JSON5/json2html bundled in, no jQuery) -->
+    <script src="<myrootdir>/dist/blapy.umd.js"></script>
   </head>
   <body id="myBlapy">
     <div
@@ -189,16 +192,8 @@ These two html files will load and behave normally if you load them and click th
 Well, just add at the end of your files this little script :
 
 ```javascript
-<!-- load of the external libraries needed by Blapy (provided in the package) -->
-    <script src="../../lib/jquery/jquery-3.7.1.min.js"></script>
-    <script src="../../lib/mustache/mustache.js"></script>
-    <script src="../../lib/navigo/index.js"></script>
-    <script src="../../lib/iFSM/lib/jquery.attrchange.js"></script>
-    <script src="../../lib/iFSM/lib/jquery.dotimeout.js"></script>
-    <script src="../../lib/json5/index.min.js"></script>
-    <script src="../../lib/iFSM/iFSM.js"></script>
-    <script src="../../lib/json2html/json2html.js"></script>
-    <script src="<myrootdir>/blapy2.js"></script>
+<!-- Blapy core (all dependencies bundled in, no jQuery) -->
+    <script src="<myrootdir>/dist/blapy.umd.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             let myBlapy = document.querySelector("#myBlapy");
@@ -269,7 +264,7 @@ You can create as many Blapy containers as you need parts of your page to be upd
       How is it going?
     </div>
     ...
-    <script type="text/javascript" src="../blapy2.js"></script>
+    <script type="text/javascript" src="../dist/blapy.umd.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         let myBlapy = document.querySelector('#myBlapy')
@@ -321,8 +316,8 @@ Options is a javascript object. It can take as input the following possible opti
 - **afterPageChange**: (default:null) function to call when the page had all its content changed
 - **onErrorOnPageChange**: (default:null) function to call when the page got an error during change
 - **doCustomChange**: (default: null) function call for custom content changes.
-- **fsmExtension**: (default:null) Finite State Machine (iFSM) definition in order to extend the default blapy's iFSM engine
-- **websocketOptions**: (default: {}) option for BlapySocket
+- **fsmExtension**: (default:null) Finite State Machine definition in order to extend Blapy's default FSM (the modern build uses the bundled `kFSM` engine)
+- **websocketOptions**: (default: {}) options for the optional BlapySocket module (see [BlapySocket Plugin](#blapysocket-plugin)); only used when a non-empty object is provided and `dist/BlapySocket.js` is loaded
 
 ## Example:
 
@@ -883,17 +878,32 @@ document
 
 # Blapy animation plugin functions
 
-It is possible to create its own animation plugin functions on Blapy blocks when they are loaded.
+Animations are **optional** and are **not bundled** into the core. They live in a
+separate module, `Blapymotion`, shipped as a standalone script `dist/BlapyMotion.js`.
+Load it and the core auto-detects it — no option to pass:
+
+```html
+<script src="<myrootdir>/dist/BlapyMotion.js"></script>
+<script src="<myrootdir>/dist/blapy.umd.js"></script>
+```
+
+Each animation is then usable as a `data-blapy-update` value on a Blapy block
+(the module provides `fadeInOut` and `rightOutIn`). If `BlapyMotion.js` is not
+loaded, blocks using those values simply update without animation.
+
+You can also inject a provider explicitly (useful for the ESM build) via the
+`animation` option: `element.Blapy({ animation: new Blapymotion() })`.
 
 It is also a way to hook features on the content that will be placed in a Blapy block...
 
-The prototype of an animation plugin function is :
+The prototype of an animation plugin function is:
 
 ```javascript
-myAnimationFunction(oldContainer,newContainer) {}
+myAnimationFunction(oldContainer, newContainer) {}
 ```
 
-Have a look in the dist/Blapymotion.ts and add your new functions in it inspired by the existing functions.
+Have a look at `src/modules/BlapyMotion.ts` and add your new functions inspired by
+the existing ones.
 
 # BlapySocket Plugin
 
@@ -909,11 +919,13 @@ The BlapySocket plugin enables real-time communication between your Blapy applic
 
 ## Installation
 
-Include the BlapySocket module after Blapy:
+BlapySocket is **optional** and **not bundled** into the core. Include the
+standalone `dist/BlapySocket.js` alongside the core — the core auto-detects the
+global and instantiates it as soon as you pass a non-empty `websocketOptions`:
 
 ```html
-<script src="path/to/blapy2.js"></script>
-<script src="path/to/BlapySocket.js"></script>
+<script src="path/to/dist/BlapySocket.js"></script>
+<script src="path/to/dist/blapy.umd.js"></script>
 ```
 
 ## Basic Usage
@@ -1056,35 +1068,20 @@ BlapySocket requires WebSocket API support:
 
 # LIBRARY DEPENDENCIES
 
-To work properly, you need to include the following javascript libraries:
+**The modern build has no external runtime dependencies.** `dist/blapy.umd.js`
+bundles everything it needs, so you only include that one file (no jQuery):
 
-- jQuery (>= 3.x)
-  - `<script type="text/javascript" src="lib/jquery-3.3.1.min.js"></script>`
-- [iFSM by intersel](https://github.com/intersel/iFSM/)
-  - this library manages finite state machines and needs these libraries:
-    - **doTimeout** by ["Cowboy" Ben Alman](http://benalman.com/projects/jquery-dotimeout-plugin/)
-    - this library brings some very usefull feature on the usual javascript setTimeout function like Debouncing, Delays & Polling Loops, Hover Intent...
-    - `<script type="text/javascript" src="lib/jquery.dotimeout.js"></script>`
-  - **attrchange** by [Selvakumar Arumugam](http://meetselva.github.io/attrchange/)
-    - a simple jQuery function to bind a listener function to any HTML element on attribute change
-    - `<script type="text/javascript" src="lib/jquery.attrchange.js"></script>`
-- [json2html](http://json2html.com/) (optional if blapy block does not use json feature or use "Mustache" template engine)
-  - json2html is a javascript HTML templating library used to transform JSON objects into HTML using a template.
-  - used for json parsing and templating
-    - `<script type="text/javascript" src="../../lib/json2html/json2html.js"></script>`
-- [Mustache](http://mustache.github.io/) (optional if blapy block does not use json feature or use "json2html" template engine)
-  - Mustache is a javascript HTML templating library used to transform JSON objects into HTML using a template.
-  - used for json parsing and templating
-    - `<script type="text/javascript" src="../../lib/mustache/mustache.js"></script>`
-- [Navigo](https://github.com/krasimir/navigo) (optional if you don't need routing management)
-  - Navigo is a small framework to make web application providing simple but efficient 'route' services
-  - `<script type="text/javascript" src="../../lib/navigo/lib/navigo.js"></script>`
-- [json5](https://json5.org/) (optional if your json are "straight" json)
-  - expands the syntax of JSON in order to be able to process less strict json input (made by humans for example)
-  - `<script type="text/javascript" src="lib/json5/index.min.js"></script>`
-- [jquery.appear](http://morr.github.io/appear.html) (optional if you don't need to init blocks when they become visible after a scroll)
+- [Mustache](http://mustache.github.io/) — bundled — HTML templating for json blocks (`{{ }}` syntax)
+- [json2html](http://json2html.com/) — bundled — HTML templating for json blocks (`${ }` syntax)
+- [Navigo](https://github.com/krasimir/navigo) — bundled — routing management
+- [json5](https://json5.org/) — bundled — lenient JSON parsing
+- Finite state machine — bundled — `kFSM` replaces the old jQuery-based iFSM
+- Visibility detection — native `IntersectionObserver` replaces the old jQuery.appear
 
-  - `<script type="text/javascript" src="lib/jquery.appear/jquery.appear.js"></script>`
+Optional modules, shipped as separate standalone scripts (auto-detected when loaded):
+
+- `dist/BlapyMotion.js` — content-transition animations (`fadeInOut`, `rightOutIn`)
+- `dist/BlapySocket.js` — real-time updates over WebSocket
 
   # FAQ
 
@@ -1687,14 +1684,16 @@ As the file is parsed as HTML, img tag will try to load the image that does not 
 
 To fix this, simply wrap your html template with the tag "xmp" which will neutralize html analysis.
 
-## My Blapy block does not appear when I change its style from "display:off" to "display:block" when "data-blapy-updateblock-ondisplay" is set
+## My Blapy block does not appear when I change its style from "display:none" to "display:block" when "data-blapy-updateblock-ondisplay" is set
 
-The jquery.appear object is not aware of a change in the display...
+The modern build detects visibility with the native
+[`IntersectionObserver`](https://developer.mozilla.org/docs/Web/API/IntersectionObserver),
+which reacts to elements entering the viewport. If a block was hidden and you
+reveal it while it is already within the viewport, force a re-check by scrolling
+the window slightly:
 
-In order to alert it, you can simulate a scroll on the window just after changing the display status of your block with :
-
-```Javascript
-$(window).scroll();
+```javascript
+window.dispatchEvent(new Event('scroll'));
 ```
 
 # How to locally compile blapy 'dist'
@@ -1719,6 +1718,12 @@ npm install
 ```
 npm run build
 ```
+
+This produces, in `dist/`:
+
+- `blapy.umd.js` / `blapy.mjs` — the core bundle (UMD for `<script>`, ESM for imports)
+- `BlapyMotion.js` — optional standalone animation module
+- `BlapySocket.js` — optional standalone WebSocket module
 
 # Contact
 
