@@ -47,14 +47,12 @@ jobs:
       - name: Build Blapy2
         run: npm run build
 
-      - name: Commit built file
+      - name: Commit built files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add dist/blapy2.js -f
-          git add dist/Blapymotion.js -f
-          git add dist/BlapySocket.js -f
-          git commit -m "chore: build dist/blapy2.js [skip ci]" || echo "no changes"
+          git add -f dist/blapy.umd.js dist/blapy.mjs dist/BlapyMotion.js dist/BlapySocket.js
+          git commit -m "chore: build dist [skip ci]" || echo "no changes"
           git push
 
       - name: Install jq (for reading version from package.json)
@@ -84,6 +82,10 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.new_version }}
           name: Release ${{ steps.version.outputs.new_version }}
-          files: dist/blapy2.js
+          files: |
+            dist/blapy.umd.js
+            dist/blapy.mjs
+            dist/BlapyMotion.js
+            dist/BlapySocket.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
