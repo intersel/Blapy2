@@ -2,11 +2,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AjaxService } from "../../src/core/AjaxService.js";
 import { Logger } from "../../src/core/Logger.js";
 
+// Minimal fetch Response stand-in exposing only what AjaxService reads.
+function mockResponse({ status = 200, body = "", contentType = "application/json" } = {}) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: {
+      get: (name) => (name.toLowerCase() === "content-type" ? contentType : null),
+    },
+    json: async () => JSON.parse(body),
+    text: async () => body,
+  };
+}
 
 describe("AjaxService", () => {
   let service;
   let logger;
-  let xhrInstance;
+  let fetchMock;
 
   beforeEach(() => {
     logger = new Logger();
@@ -16,34 +28,36 @@ describe("AjaxService", () => {
 
     service = new AjaxService(logger);
 
-    xhrInstance = {
-      open: vi.fn(),
-      send: vi.fn(),
-      setRequestHeader: vi.fn(),
-      getResponseHeader: vi.fn(),
-      onload: null,
-      onerror: null,
-      ontimeout: null,
-      status: 200,
-      responseText: "{\"success\":true}",
-      timeout: 0,
-    };
+    // AjaxService builds a `new Request(url, { signal })`. In jsdom, Request
+    // validates that `signal` is *its* AbortSignal, which rejects Node's
+    // AbortController signal. Stub Request with a pass-through so construction
+    // never throws; the mocked fetch ignores it anyway.
+    vi.stubGlobal(
+      "Request",
+      class {
+        constructor(url, options = {}) {
+          this.url = url;
+          Object.assign(this, options);
+          this.headers = { set: () => {} };
+        }
+      },
+    );
 
-    global.XMLHttpRequest = vi.fn(() => xhrInstance);
+    fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("should perform a GET request and log success", async () => {
-    xhrInstance.getResponseHeader = vi.fn(() => "application/json");
-
-    setTimeout(() => xhrInstance.onload());
+    fetchMock.mockResolvedValue(
+      mockResponse({ status: 200, body: '{"success":true}', contentType: "application/json" }),
+    );
 
     const result = await service.get("https://jsonplaceholder.typicode.com/comments");
-
-    console.log(result)
 
     expect(result).toEqual({ success: true });
     expect(logger.info).toHaveBeenCalledWith(
@@ -53,11 +67,11 @@ describe("AjaxService", () => {
   });
 
   it("should log and throw on HTTP error", async () => {
-    xhrInstance.status = 404;
-    xhrInstance.statusText = "Not Found";
-    setTimeout(() => xhrInstance.onload());
+    fetchMock.mockResolvedValue(
+      mockResponse({ status: 404, body: "Not Found", contentType: "text/plain" }),
+    );
 
-    await expect(service.get("/fail")).rejects.toThrow("HTTP 404: Not Found");
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("AJAX Error"), expect.anything());
+    await expect(service.get("/fail")).rejects.toThrow("HTTP 404");
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("AJAX Error"));
   });
 });

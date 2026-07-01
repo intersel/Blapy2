@@ -32,25 +32,6 @@ const mockBlapy = {
   myUIObjectID: 'test-blapy-id'
 }
 
-global.JSON5 = {
-  parse: vi.fn((str) => JSON.parse(str)),
-  stringify: vi.fn((obj) => JSON.stringify(obj))
-}
-
-global.Mustache = {
-  render: vi.fn((template, data) => `<div>Rendered: ${JSON.stringify(data)}</div>`)
-}
-
-global.json2html = {
-  transform: vi.fn((data, template) => `<div>json2html: ${data}</div>`)
-}
-
-global.$ = vi.fn((selector) => ({
-  html: vi.fn(() => '<div>mock html</div>'),
-  filter: vi.fn(() => ({ add: vi.fn(() => ({ first: vi.fn(() => ({ get: vi.fn(() => [{ id: 'test' }]) })) })) })),
-  find: vi.fn(() => ({ first: vi.fn(() => ({ get: vi.fn(() => [{ id: 'test' }]) })) }))
-}))
-
 describe('TemplateManager', () => {
   let templateManager
 
@@ -177,7 +158,7 @@ describe('TemplateManager', () => {
     })
   })
 
-  describe('_initializeJsonBlock', () => {
+  describe('initializeJsonBlock', () => {
     let container
 
     beforeEach(() => {
@@ -190,7 +171,7 @@ describe('TemplateManager', () => {
     it('should trigger FSM events for template initialization', () => {
       container.setAttribute('data-blapy-template-init', '/api/data')
       
-      templateManager._initializeJsonBlock(container, false, mockBlapy)
+      templateManager.initializeJsonBlock(container, mockBlapy, false)
       
       expect(mockBlapy.myFSM.trigger).toHaveBeenCalledWith('postData', {
         aUrl: '/api/data',
@@ -205,7 +186,7 @@ describe('TemplateManager', () => {
       container.setAttribute('data-blapy-template-init-params', '{"filter":"active"}')
       container.setAttribute('data-blapy-template-init-method', 'POST')
       
-      templateManager._initializeJsonBlock(container, false, mockBlapy)
+      templateManager.initializeJsonBlock(container, mockBlapy, false)
       
       expect(mockBlapy.myFSM.trigger).toHaveBeenCalledWith('postData', {
         aUrl: '/api/data',
@@ -219,13 +200,13 @@ describe('TemplateManager', () => {
       container.setAttribute('data-blapy-template-init', '/api/data')
       container.setAttribute('data-blapy-updateblock-ondisplay', 'true')
       
-      templateManager._initializeJsonBlock(container, false, mockBlapy)
+      templateManager.initializeJsonBlock(container, mockBlapy, false)
       
       expect(mockBlapy.myFSM.trigger).not.toHaveBeenCalled()
     })
 
     it('should trigger Blapy_templateReady event', () => {
-      templateManager._initializeJsonBlock(container, false, mockBlapy)
+      templateManager.initializeJsonBlock(container, mockBlapy, false)
       
       expect(mockBlapy.trigger).toHaveBeenCalledWith('Blapy_templateReady', { detail: container })
     })
@@ -247,17 +228,17 @@ describe('TemplateManager', () => {
     })
 
     it('should process JSON update successfully', async () => {
-      const extractSpy = vi.spyOn(templateManager, '_extractAndParseJsonData')
+      const extractSpy = vi.spyOn(templateManager, 'extractAndParseJsonData')
         .mockResolvedValue({ name: 'John', age: 30 })
-      const transformSpy = vi.spyOn(templateManager, '_applyDataTransformations')
+      const transformSpy = vi.spyOn(templateManager, 'applyDataTransformations')
         .mockReturnValue({ name: 'John', age: 30, blapyIndex: 0 })
-      const templateSpy = vi.spyOn(templateManager, '_getTemplate')
+      const templateSpy = vi.spyOn(templateManager, 'getTemplate')
         .mockReturnValue({ content: '{{name}}', allTemplates: [] })
-      const generateSpy = vi.spyOn(templateManager, '_generateHtml')
+      const generateSpy = vi.spyOn(templateManager, 'generateHtml')
         .mockReturnValue('<div>John</div>')
-      const injectSpy = vi.spyOn(templateManager, '_injectFinalHtml')
+      const injectSpy = vi.spyOn(templateManager, 'injectFinalHtml')
       
-      await templateManager.processJsonUpdate(null, myContainer, aBlapyContainer, JSON, mockBlapy)
+      await templateManager.processJsonUpdate(null, myContainer, aBlapyContainer, mockBlapy)
       
       expect(extractSpy).toHaveBeenCalled()
       expect(transformSpy).toHaveBeenCalled()
@@ -267,10 +248,10 @@ describe('TemplateManager', () => {
     })
 
     it('should handle errors gracefully', async () => {
-      vi.spyOn(templateManager, '_extractAndParseJsonData')
+      vi.spyOn(templateManager, 'extractAndParseJsonData')
         .mockRejectedValue(new Error('Parse error'))
       
-      await templateManager.processJsonUpdate(null, myContainer, aBlapyContainer, JSON, mockBlapy)
+      await templateManager.processJsonUpdate(null, myContainer, aBlapyContainer, mockBlapy)
       
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Erreur dans processJsonUpdate: Parse error',
@@ -279,7 +260,7 @@ describe('TemplateManager', () => {
     })
   })
 
-  describe('_extractAndParseJsonData', () => {
+  describe('extractAndParseJsonData', () => {
     let aBlapyContainer
 
     beforeEach(() => {
@@ -288,11 +269,8 @@ describe('TemplateManager', () => {
 
     it('should parse JSON data successfully', async () => {
       aBlapyContainer.innerHTML = '{"name": "John", "age": 30}'
-      global.$ = vi.fn(() => ({
-        html: vi.fn(() => '{"name": "John", "age": 30}')
-      }))
       
-      const result = await templateManager._extractAndParseJsonData(null, aBlapyContainer, JSON)
+      const result = await templateManager.extractAndParseJsonData(null, aBlapyContainer)
       
       expect(result).toEqual({ name: 'John', age: 30 })
     })
@@ -302,50 +280,38 @@ describe('TemplateManager', () => {
       tmpContainer.innerHTML = btoa('{"name": "Jane"}')
       
       mockUtils.atou.mockReturnValue('{"name": "Jane"}')
-      global.$ = vi.fn(() => ({
-        html: vi.fn(() => btoa('{"name": "Jane"}'))
-      }))
       
-      const result = await templateManager._extractAndParseJsonData(tmpContainer, aBlapyContainer, JSON)
+      const result = await templateManager.extractAndParseJsonData(tmpContainer, aBlapyContainer)
       
       expect(mockUtils.atou).toHaveBeenCalled()
       expect(result).toEqual({ name: 'Jane' })
     })
 
-    it('should handle parsing errors with retry mechanism', async () => {
-      aBlapyContainer.innerHTML = 'invalid json'
-      global.$ = vi.fn()
-        .mockReturnValueOnce({
-          html: vi.fn(() => 'invalid json')
-        })
-        .mockReturnValueOnce({
-          html: vi.fn(() => '{"name": "recovered"}')
-        })
-      
-      JSON.parse = vi.fn()
-        .mockImplementationOnce(() => { throw new Error('Parse error') })
-        .mockImplementationOnce(() => ({ name: 'recovered' }))
-      
-      const result = await templateManager._extractAndParseJsonData(null, aBlapyContainer, JSON)
-      
-      expect(mockLogger.warn).toHaveBeenCalledWith('Premier parsing échoué, tentative d\'extraction HTML', 'templateManager')
+    it('should recover by extracting JSON from a wrapping element', async () => {
+      // First JSON5.parse fails (it's HTML), then the JSON is extracted from the
+      // wrapping element's innerHTML and parsed successfully.
+      aBlapyContainer.innerHTML = '<div>{"name": "recovered"}</div>'
+
+      const result = await templateManager.extractAndParseJsonData(null, aBlapyContainer)
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Premier parsing échoué, tentative d'extraction HTML",
+        'templateManager',
+      )
       expect(result).toEqual({ name: 'recovered' })
     })
 
     it('should throw error when all parsing attempts fail', async () => {
       aBlapyContainer.innerHTML = 'completely invalid'
-      global.$ = vi.fn(() => ({
-        html: vi.fn(() => 'completely invalid')
-      }))
       
       JSON.parse = vi.fn(() => { throw new Error('Parse error') })
       
-      await expect(templateManager._extractAndParseJsonData(null, aBlapyContainer, JSON))
+      await expect(templateManager.extractAndParseJsonData(null, aBlapyContainer))
         .rejects.toThrow('Parsing JSON impossible')
     })
   })
 
-  describe('_extractBlapyData', () => {
+  describe('extractBlapyData', () => {
     it('should extract blapy-data when present and container matches', () => {
       const jsonDataObj = {
         'blapy-data': { items: [1, 2, 3] },
@@ -355,7 +321,7 @@ describe('TemplateManager', () => {
         getAttribute: vi.fn().mockReturnValue('testContainer')
       }
       
-      const result = templateManager._extractBlapyData(jsonDataObj, container)
+      const result = templateManager.extractBlapyData(jsonDataObj, container)
       
       expect(result).toEqual({ items: [1, 2, 3] })
     })
@@ -369,7 +335,7 @@ describe('TemplateManager', () => {
         getAttribute: vi.fn().mockReturnValue('testContainer')
       }
       
-      const result = templateManager._extractBlapyData(jsonDataObj, container)
+      const result = templateManager.extractBlapyData(jsonDataObj, container)
       
       expect(result).toBeNull()
       expect(mockLogger.warn).toHaveBeenCalled()
@@ -378,13 +344,13 @@ describe('TemplateManager', () => {
     it('should return original object when no blapy-data', () => {
       const jsonDataObj = { items: [1, 2, 3] }
       
-      const result = templateManager._extractBlapyData(jsonDataObj)
+      const result = templateManager.extractBlapyData(jsonDataObj)
       
       expect(result).toEqual({ items: [1, 2, 3] })
     })
   })
 
-  describe('_applyDataTransformations', () => {
+  describe('applyDataTransformations', () => {
     let container, jsonData
 
     beforeEach(() => {
@@ -396,21 +362,21 @@ describe('TemplateManager', () => {
     })
 
     it('should apply all transformations in correct order', () => {
-      const fromPropSpy = vi.spyOn(templateManager, '_applyInitFromProperty').mockReturnValue(jsonData)
-      const searchSpy = vi.spyOn(templateManager, '_applyInitSearch').mockReturnValue(jsonData)
-      const processSpy = vi.spyOn(templateManager, '_applyProcessDataFunctions').mockReturnValue(jsonData)
-      const indicesSpy = vi.spyOn(templateManager, '_addBlapyIndices').mockReturnValue(jsonData)
+      const fromPropSpy = vi.spyOn(templateManager, 'applyInitFromProperty').mockReturnValue(jsonData)
+      const searchSpy = vi.spyOn(templateManager, 'applyInitSearch').mockReturnValue(jsonData)
+      const processSpy = vi.spyOn(templateManager, 'applyProcessDataFunctions').mockReturnValue(jsonData)
+      const indicesSpy = vi.spyOn(templateManager, 'addBlapyIndices').mockReturnValue(jsonData)
       
-      templateManager._applyDataTransformations(jsonData, container, JSON)
+      templateManager.applyDataTransformations(jsonData, container)
       
       expect(fromPropSpy).toHaveBeenCalledWith(jsonData, container)
       expect(searchSpy).toHaveBeenCalledWith(jsonData, container)
-      expect(processSpy).toHaveBeenCalledWith(jsonData, container, JSON)
+      expect(processSpy).toHaveBeenCalledWith(jsonData, container)
       expect(indicesSpy).toHaveBeenCalledWith(jsonData)
     })
   })
 
-  describe('_applyInitFromProperty', () => {
+  describe('applyInitFromProperty', () => {
     let container
 
     beforeEach(() => {
@@ -425,7 +391,7 @@ describe('TemplateManager', () => {
       }
       container.setAttribute('data-blapy-template-init-fromproperty', 'data.users')
       
-      const result = templateManager._applyInitFromProperty(jsonData, container)
+      const result = templateManager.applyInitFromProperty(jsonData, container)
       
       expect(result).toEqual([{ name: 'John' }, { name: 'Jane' }])
     })
@@ -433,7 +399,7 @@ describe('TemplateManager', () => {
     it('should return original data when no property specified', () => {
       const jsonData = { name: 'John' }
       
-      const result = templateManager._applyInitFromProperty(jsonData, container)
+      const result = templateManager.applyInitFromProperty(jsonData, container)
       
       expect(result).toEqual({ name: 'John' })
     })
@@ -442,13 +408,13 @@ describe('TemplateManager', () => {
       const jsonData = { name: 'John' }
       container.setAttribute('data-blapy-template-init-fromproperty', 'missing.property')
       
-      const result = templateManager._applyInitFromProperty(jsonData, container)
+      const result = templateManager.applyInitFromProperty(jsonData, container)
       
       expect(result).toEqual({ name: 'John' })
     })
   })
 
-  describe('_applyInitSearch', () => {
+  describe('applyInitSearch', () => {
     let container
 
     beforeEach(() => {
@@ -469,7 +435,7 @@ describe('TemplateManager', () => {
         { id: 3, status: 'active', type: 'admin' }
       ])
       
-      const result = templateManager._applyInitSearch(jsonData, container)
+      const result = templateManager.applyInitSearch(jsonData, container)
       
       expect(result).toHaveLength(2)
       expect(result[0].id).toBe(1)
@@ -487,7 +453,7 @@ describe('TemplateManager', () => {
         .mockReturnValueOnce([{ id: 1, status: 'active', type: 'user' }])
         .mockReturnValueOnce([{ id: 1, status: 'active', type: 'user' }])
       
-      const result = templateManager._applyInitSearch(jsonData, container)
+      const result = templateManager.applyInitSearch(jsonData, container)
       
       expect(result).toHaveLength(1)
     })
@@ -495,7 +461,7 @@ describe('TemplateManager', () => {
     it('should return original data when no search specified', () => {
       const jsonData = [{ id: 1, name: 'John' }]
       
-      const result = templateManager._applyInitSearch(jsonData, container)
+      const result = templateManager.applyInitSearch(jsonData, container)
       
       expect(result).toEqual(jsonData)
     })
@@ -508,14 +474,14 @@ describe('TemplateManager', () => {
         throw new Error('Search error')
       })
       
-      const result = templateManager._applyInitSearch(jsonData, container)
+      const result = templateManager.applyInitSearch(jsonData, container)
       
       expect(result).toEqual(jsonData)
       expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
-  describe('_addBlapyIndices', () => {
+  describe('addBlapyIndices', () => {
     it('should add indices to array data', () => {
       const jsonData = [
         { name: 'John' },
@@ -523,7 +489,7 @@ describe('TemplateManager', () => {
         { name: 'Bob' }
       ]
       
-      const result = templateManager._addBlapyIndices(jsonData)
+      const result = templateManager.addBlapyIndices(jsonData)
       
       expect(result[0]).toEqual({ name: 'John', blapyIndex: 1, blapyFirst: true })
       expect(result[1]).toEqual({ name: 'Jane', blapyIndex: 2 })
@@ -533,7 +499,7 @@ describe('TemplateManager', () => {
     it('should handle single object', () => {
       const jsonData = { name: 'John' }
       
-      const result = templateManager._addBlapyIndices(jsonData)
+      const result = templateManager.addBlapyIndices(jsonData)
       
       expect(result).toEqual({ name: 'John', blapyIndex: 0 })
     })
@@ -543,14 +509,14 @@ describe('TemplateManager', () => {
         { name: 'John', blapyIndex: 999 }
       ]
       
-      const result = templateManager._addBlapyIndices(jsonData)
+      const result = templateManager.addBlapyIndices(jsonData)
       
       expect(result[0].blapyIndex).toBe(999)
       expect(result[0].blapyFirst).toBe(true)
     })
   })
 
-  describe('_getTemplate', () => {
+  describe('getTemplate', () => {
     let container
 
     beforeEach(() => {
@@ -573,7 +539,7 @@ describe('TemplateManager', () => {
       container.appendChild(template2)
       container.setAttribute('data-blapy-template-default-id', 'template2')
       
-      const result = templateManager._getTemplate(container)
+      const result = templateManager.getTemplate(container)
       
       expect(result.content).toBe('<div>Template 2</div>')
       expect(result.allTemplates).toHaveLength(2)
@@ -585,13 +551,13 @@ describe('TemplateManager', () => {
       template.innerHTML = '<div>Default Template</div>'
       container.appendChild(template)
       
-      const result = templateManager._getTemplate(container)
+      const result = templateManager.getTemplate(container)
       
       expect(result.content).toBe('<div>Default Template</div>')
     })
 
     it('should return null when no template found', () => {
-      const result = templateManager._getTemplate(container)
+      const result = templateManager.getTemplate(container)
       
       expect(result).toBeNull()
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -606,7 +572,7 @@ describe('TemplateManager', () => {
       template.innerHTML = 'x'
       container.appendChild(template)
       
-      const result = templateManager._getTemplate(container)
+      const result = templateManager.getTemplate(container)
       
       expect(result).toBeNull()
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -616,7 +582,7 @@ describe('TemplateManager', () => {
     })
   })
 
-  describe('_generateHtml', () => {
+  describe('generateHtml', () => {
     let container, template
 
     beforeEach(() => {
@@ -627,74 +593,52 @@ describe('TemplateManager', () => {
       }
     })
 
-    it('should use Mustache when available', () => {
-      const jsonData = { name: 'John' }
-      
-      const result = templateManager._generateHtml(jsonData, template, container)
-      
-      expect(global.Mustache.render).toHaveBeenCalledWith(
-        '{{#.}}<div>{{name}}</div>{{/.}}',
-        jsonData
-      )
-      expect(result).toBe('<div>Rendered: {"name":"John"}</div>')
+    it('should render a Mustache template ({{ }} syntax)', () => {
+      const result = templateManager.generateHtml({ name: 'John' }, template, container)
+
+      expect(result).toBe('<div>John</div>')
     })
 
-    it('should use custom Mustache delimiters when specified', () => {
-      const jsonData = { name: 'John' }
+    it('should render with custom Mustache delimiters when specified', () => {
       container.setAttribute('data-blapy-template-mustache-delimiterStart', '<%')
       container.setAttribute('data-blapy-template-mustache-delimiterEnd', '%>')
       template.content = '<div><%name%></div>'
-      
-      const result = templateManager._generateHtml(jsonData, template, container)
-      
-      expect(global.Mustache.render).toHaveBeenCalledWith(
-        '{{=<% %>=}}<%#.%><div><%name%></div><%/.%>',
-        jsonData
-      )
+
+      const result = templateManager.generateHtml({ name: 'John' }, template, container)
+
+      expect(result).toBe('<div>John</div>')
     })
 
-    it('should use json2html when Mustache is not available', () => {
-      global.Mustache = undefined
-      const jsonData = { name: 'John' }
-      
-      const result = templateManager._generateHtml(jsonData, template, container)
-      
-      expect(global.json2html.transform).toHaveBeenCalledWith(
-        JSON.stringify(jsonData),
-        { tag: 'void', html: '<div>{{name}}</div>' }
-      )
-      expect(result).toBe('<div>json2html: {"name":"John"}</div>')
+    it('should render a json2html template (${ } syntax)', () => {
+      template.content = '<div>${name}</div>'
+
+      const result = templateManager.generateHtml({ name: 'John' }, template, container)
+
+      expect(result).toContain('John')
     })
 
-    it('should show error when no parser is available', () => {
-      global.Mustache = undefined
-      global.json2html = undefined
-      global.alert = vi.fn()
-      
-      const result = templateManager._generateHtml({}, template, container)
-      
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'no json parser loaded... need to include json2html or Mustache library! ',
-        'templateManager'
-      )
-      expect(global.alert).toHaveBeenCalledWith(
-        'no json parser loaded... need to include "json2html" or "Mustache" library!'
-      )
+    it('should return an empty string and warn when data is null', () => {
+      const result = templateManager.generateHtml(null, template, container)
+
       expect(result).toBe('')
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('jsonDataObj is null'),
+        'templateManager.generateHtml',
+      )
     })
   })
 
-  describe('_prepareTemplateContent', () => {
+  describe('prepareTemplateContent', () => {
     it('should replace template placeholders', () => {
       const content = '|xmp class="test"|/xmp blapyScriptJS'
       
-      const result = templateManager._prepareTemplateContent(content)
+      const result = templateManager.prepareTemplateContent(content)
       
       expect(result).toBe('xmp class="test"/xmp script')
     })
   })
 
-  describe('_injectFinalHtml', () => {
+  describe('injectFinalHtml', () => {
     let container, template
 
     beforeEach(() => {
@@ -711,7 +655,7 @@ describe('TemplateManager', () => {
       container.setAttribute('data-blapy-template-header', '<header>Header</header>')
       container.setAttribute('data-blapy-template-footer', '<footer>Footer</footer>')
       
-      templateManager._injectFinalHtml('<div>Content</div>', container, mockBlapy, template)
+      templateManager.injectFinalHtml('<div>Content</div>', container, mockBlapy, template)
       
       expect(container.innerHTML).toBe('<header>Header</header><div>Content</div><footer>Footer</footer>')
     })
@@ -719,7 +663,7 @@ describe('TemplateManager', () => {
     it('should apply wrapper template', () => {
       container.setAttribute('data-blapy-template-wrap', '<section class="wrapper"></section>')
       
-      templateManager._injectFinalHtml('<div>Content</div>', container, mockBlapy, template)
+      templateManager.injectFinalHtml('<div>Content</div>', container, mockBlapy, template)
       
       expect(container.innerHTML).toBe('<section class="wrapper"><div>Content</div></section>')
     })
@@ -729,7 +673,7 @@ describe('TemplateManager', () => {
       subContainer.setAttribute('data-blapy-update', 'json')
       
       return new Promise((resolve) => {
-        templateManager._injectFinalHtml('<div>Content</div>', container, mockBlapy, template)
+        templateManager.injectFinalHtml('<div>Content</div>', container, mockBlapy, template)
         container.appendChild(subContainer)
         
         setTimeout(() => {
@@ -742,7 +686,7 @@ describe('TemplateManager', () => {
     it('should replace script tags to make them executable', () => {
       const htmlWithScript = '<div>Content</div><script>console.log("test")</script>'
       
-      templateManager._injectFinalHtml(htmlWithScript, container, mockBlapy, template)
+      templateManager.injectFinalHtml(htmlWithScript, container, mockBlapy, template)
       
       const scripts = container.querySelectorAll('script')
       expect(scripts).toHaveLength(1)
@@ -752,7 +696,7 @@ describe('TemplateManager', () => {
     it('should handle script tags with src attribute', () => {
       const htmlWithScript = '<div>Content</div><script src="test.js"></script>'
       
-      templateManager._injectFinalHtml(htmlWithScript, container, mockBlapy, template)
+      templateManager.injectFinalHtml(htmlWithScript, container, mockBlapy, template)
       
       const scripts = container.querySelectorAll('script')
       expect(scripts).toHaveLength(1)
@@ -773,7 +717,7 @@ describe('TemplateManager', () => {
         allTemplates: [template1, template2]
       }
       
-      templateManager._injectFinalHtml('<div>Generated</div>', container, mockBlapy, templateWithAll)
+      templateManager.injectFinalHtml('<div>Generated</div>', container, mockBlapy, templateWithAll)
       
       expect(container.innerHTML).toContain('Template 1')
       expect(container.innerHTML).toContain('Template 2')
@@ -797,13 +741,10 @@ describe('TemplateManager', () => {
       const aBlapyContainer = document.createElement('div')
       aBlapyContainer.innerHTML = 'invalid json {'
       
-      global.$ = vi.fn(() => ({
-        html: vi.fn(() => 'invalid json {')
-      }))
       
       JSON.parse = vi.fn(() => { throw new Error('Malformed JSON') })
       
-      await templateManager.processJsonUpdate(null, container, aBlapyContainer, JSON, mockBlapy)
+      await templateManager.processJsonUpdate(null, container, aBlapyContainer, mockBlapy)
       
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Erreur dans processJsonUpdate: Parsing JSON impossible',
@@ -844,13 +785,10 @@ describe('TemplateManager', () => {
       const aBlapyContainer = document.createElement('div')
       aBlapyContainer.innerHTML = JSON.stringify(testData)
       
-      global.$ = vi.fn(() => ({
-        html: vi.fn(() => JSON.stringify(testData))
-      }))
       
       document.body.appendChild(container)
       
-      await templateManager.processJsonUpdate(null, container, aBlapyContainer, JSON, mockBlapy)
+      await templateManager.processJsonUpdate(null, container, aBlapyContainer, mockBlapy)
       
       expect(container.innerHTML).toContain('xmp')
     })
@@ -891,11 +829,8 @@ describe('TemplateManager', () => {
       const aBlapyContainer = document.createElement('div')
       aBlapyContainer.innerHTML = ''
       
-      global.$ = vi.fn(() => ({
-        html: vi.fn(() => '')
-      }))
       
-      await templateManager.processJsonUpdate(null, container, aBlapyContainer, JSON, mockBlapy)
+      await templateManager.processJsonUpdate(null, container, aBlapyContainer, mockBlapy)
       
       expect(mockLogger.error).toHaveBeenCalled()
     })
@@ -903,17 +838,17 @@ describe('TemplateManager', () => {
     it('should handle null/undefined values in data transformations', () => {
       const container = document.createElement('div')
       
-      const result1 = templateManager._applyInitFromProperty(null, container)
+      const result1 = templateManager.applyInitFromProperty(null, container)
       expect(result1).toBeNull()
       
-      const result2 = templateManager._applyInitSearch(undefined, container)
+      const result2 = templateManager.applyInitSearch(undefined, container)
       expect(result2).toBeUndefined()
     })
 
     it('should handle containers without required attributes', () => {
       const container = document.createElement('div')
       
-      templateManager._initializeJsonBlock(container, false, mockBlapy)
+      templateManager.initializeJsonBlock(container, mockBlapy, false)
       
       expect(mockBlapy.trigger).not.toHaveBeenCalledWith('Blapy_templateReady', { detail: container })
     })
@@ -925,7 +860,7 @@ describe('TemplateManager', () => {
         email: `user${i}@example.com`
       }))
       
-      const result = templateManager._addBlapyIndices([...largeDataset])
+      const result = templateManager.addBlapyIndices([...largeDataset])
       
       expect(result).toHaveLength(1000)
       expect(result[0].blapyFirst).toBe(true)
@@ -936,7 +871,7 @@ describe('TemplateManager', () => {
     it('should handle special characters in template content', () => {
       const content = '<div>Special chars: àéîôù & < > " \'</div>'
       
-      const result = templateManager._prepareTemplateContent(content)
+      const result = templateManager.prepareTemplateContent(content)
       
       expect(result).toContain('Special chars: àéîôù & < > " \'')
     })
@@ -946,7 +881,7 @@ describe('TemplateManager', () => {
       circularData.self = circularData
       
       expect(() => {
-        templateManager._extractBlapyData(circularData)
+        templateManager.extractBlapyData(circularData)
       }).not.toThrow()
     })
   })
