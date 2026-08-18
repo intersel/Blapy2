@@ -6,6 +6,7 @@
  * File : core/TemplateManager.js
  *
  * Modifications:
+ * - 2026-08-18 - EPO - fix error in _applyDataTransformations when jsonDataObj is null
  * - 2026-03-13 - EPO - fix test on mustache tags to parse the template with mustache
  * - 2026-03-09 - EPO - fix error output in logger.error + jsondataobject call in json2html
  * - 2025-11-28 - EPO - Parse the template even though there is no Mustache tags
@@ -448,7 +449,21 @@ export class TemplateManager {
     let processedData = jsonDataObj
 
     processedData = this._applyInitFromProperty(processedData, myContainer)
+    if (!processedData) {
+      this.logger.info(
+        'No data found after applying data-blapy-template-init-fromproperty filter',
+        'templateManager',
+      )
+      return null
+    }
     processedData = this._applyInitSearch(processedData, myContainer)
+    if (!processedData) {
+      this.logger.info(
+        'No data found after applying data-blapy-template-init-search filter',
+        'templateManager',
+      )
+      return null
+    }
 
     processedData = this._applyProcessDataFunctions(
       processedData,
@@ -456,6 +471,13 @@ export class TemplateManager {
       jsonFeatures,
     )
 
+    if (!processedData) {
+      this.logger.info(
+        'No data found after applying data-blapy-template-init-processdata functions',
+        'templateManager',
+      )
+      return null
+    }
     return this._addBlapyIndices(processedData)
   }
 
