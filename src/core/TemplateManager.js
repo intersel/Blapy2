@@ -6,17 +6,18 @@
  * File : core/TemplateManager.js
  *
  * Modifications:
- * - 2026-08-18 - EPO - fix error in _applyDataTransformations when jsonDataObj is null
- * - 2026-03-13 - EPO - fix test on mustache tags to parse the template with mustache
- * - 2026-03-09 - EPO - fix error output in logger.error + jsondataobject call in json2html
- * - 2025-11-28 - EPO - Parse the template even though there is no Mustache tags
+ * - 2026-08-27 - v1.0.5 - EPO - apply the _applyProcessDataFunctions in _applyDataTransformations even if the jsonDataObj is null
+ * - 2026-08-18 - v1.0.4 - EPO - fix error in _applyDataTransformations when jsonDataObj is null
+ * - 2026-03-13 - v1.0.3 - EPO - fix test on mustache tags to parse the template with mustache
+ * - 2026-03-09 - v1.0.2 - EPO - fix error output in logger.error + jsondataobject call in json2html
+ * - 2025-11-28 - v1.0.1 - EPO - Parse the template even though there is no Mustache tags
  * -----------------------------------------------------------------------------------------
- * @copyright Intersel 2015-2025
+ * @copyright Intersel 2015-2026
  * @fileoverview Gestionnaire de templates pour Blapy2
  * @see {@link https://github.com/intersel/blapy2}
  * @author : Corentin NELHOMME — corentin.nelhomme@livinweb.fr
  * @author : Emmanuel Podvin - emmanuel.podvin@livinweb.fr
- * @version : 1.0.1
+ * @version : 1.0.5
  * @license : DonationWare — see https://github.com/intersel//blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  **/
@@ -270,45 +271,63 @@ export class TemplateManager {
     Blapy,
   ) {
 
+    let processedData = null;
+    let jsonDataObj = null;
+    let template = null;
+    let generatedHtml = null;
+    let containerName = myContainer.getAttribute('data-blapy-container-name');
 
     try {
-      const jsonDataObj = await this._extractAndParseJsonData(
+      jsonDataObj = await this._extractAndParseJsonData(
         tmpContainer,
         aBlapyContainer,
         jsonFeatures,
       )
 
-      const containerName = myContainer.getAttribute('data-blapy-container-name')
-
       if (!jsonDataObj) return
 
-      const processedData = this._applyDataTransformations(
+      processedData = this._applyDataTransformations(
         jsonDataObj,
         myContainer,
         jsonFeatures,
       )
+    } catch (error) {
+      this.logger.error(
+        `Erreur dans processJsonUpdate _applyDataTransformations: ${error.message}`,
+        'templateManager',
+      );
+      return;
+    }
 
-
-      const template = this._getTemplate(myContainer)
+    try {
+      template = this._getTemplate(myContainer)
 
 
       if (!template) return
 
-      const generatedHtml = this._generateHtml(
+      generatedHtml = this._generateHtml(
         processedData,
         template,
         myContainer,
       )
+    } catch(error) {
+      this.logger.error(
+        `Erreur dans processJsonUpdate _generateHtml: ${error.message}`,
+        'templateManager',
+      );
+      return;
+    }
 
-
-
+    try {
       this._injectFinalHtml(generatedHtml, myContainer, Blapy, template)
 
     } catch (error) {
       this.logger.error(
-        `Erreur dans processJsonUpdate: ${error.message}`,
+        `Erreur dans processJsonUpdate _injectFinalHtml: ${error.message}`,
         'templateManager',
-      )
+      );
+      return;
+
     }
   }
 
@@ -445,40 +464,51 @@ export class TemplateManager {
    * @returns {Object|Array} The transformed JSON data with applied filters and indices.
    */
   _applyDataTransformations(jsonDataObj, myContainer, jsonFeatures) {
-    this.logger.info('_applyDataTransformations', 'templateManager')
-    let processedData = jsonDataObj
+    this.logger.info('_applyDataTransformations', 'templateManager');
+    let processedData = jsonDataObj;
 
-    processedData = this._applyInitFromProperty(processedData, myContainer)
+    if (!processedData) {
+      this.logger.info(
+        'No data sent (jsonDataObj is null) to process in _applyDataTransformations',
+        'templateManager',
+      );
+    }
+    else {
+      processedData = this._applyInitFromProperty(processedData, myContainer);
+    }
+
     if (!processedData) {
       this.logger.info(
         'No data found after applying data-blapy-template-init-fromproperty filter',
         'templateManager',
-      )
-      return null
+      );
     }
-    processedData = this._applyInitSearch(processedData, myContainer)
+    else {
+      processedData = this._applyInitSearch(processedData, myContainer);
+    }
+
     if (!processedData) {
       this.logger.info(
         'No data found after applying data-blapy-template-init-search filter',
         'templateManager',
-      )
-      return null
+      );
     }
 
+    // Apply custom data processing functions if specified
     processedData = this._applyProcessDataFunctions(
       processedData,
       myContainer,
       jsonFeatures,
-    )
+    );
 
     if (!processedData) {
       this.logger.info(
         'No data found after applying data-blapy-template-init-processdata functions',
         'templateManager',
-      )
-      return null
+      );
+      return null;
     }
-    return this._addBlapyIndices(processedData)
+    return this._addBlapyIndices(processedData);
   }
 
   /**
@@ -755,10 +785,6 @@ export class TemplateManager {
    * @returns {string} The generated HTML string.
    */
   _generateHtml(jsonDataObj, template, myContainer) {
-    let htmlTplContent = this._prepareTemplateContent(template.content);
-    let newHtml = '';
-    let parsed = false;
-
     if (!jsonDataObj) {
       this.logger.warn(
         'jsonDataObj is null... cannot generate html from template and so returning void html',
@@ -766,6 +792,10 @@ export class TemplateManager {
       )
       return '';
     }
+
+    let htmlTplContent = this._prepareTemplateContent(template.content);
+    let newHtml = '';
+    let parsed = false;
 
     const jsonData = JSON.stringify(jsonDataObj);
 
