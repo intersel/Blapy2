@@ -7,12 +7,12 @@
  * Blapy : Main class for managing the Blapy V2 module
  *
  * -----------------------------------------------------------------------------------------
- * @copyright Intersel 2015-2025
+ * @copyright Intersel 2015-2026
  * @fileoverview Main Blapy V2 class – primary manager of the module.
  * @see {@link https://github.com/intersel/blapy2}
  * @author Corentin NELHOMME - corentin.nelhomme@livinweb.fr
  * @author Emmanuel PODVIN - emmanuel.podvin@livinweb.fr
- * @version 2.1.1
+ * @version 2.1.2
  * @license DonationWare - see https://github.com/intersel/blapy2/blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  *
@@ -29,6 +29,7 @@
  * -----------------------------------------------------------------------------------------
  *
  *  Edit :
+ * - 2026/09/17 - E.PODVIN - V2.1.2 - fix bubling on dispatchEvent for Blapy_afterContentChange and Blapy_jsonAppended
  * - 2025/12/04 - E.PODVIN - V2.1.1 - fix bad typo for LogLevel to init the FSM options
  * - 06/08/25 - C.NELHOMME - V2.1 - Added websockets supports blapy can receive order by the websockets server.
  * - 30/07/25 - C.NELHOMME - V1.0 - Creation of the base version
@@ -550,6 +551,7 @@ export class Blapy {
                     }
                     myContainer.dispatchEvent(new CustomEvent('Blapy_beforeContentChange', {
                       detail: this.myUIObject,
+                      bubbles: true
                     }))
 
                     if (!dataBlapyUpdate || dataBlapyUpdate === 'update') {
@@ -689,7 +691,8 @@ export class Blapy {
                           newItems: Array.isArray(newJsonData) ? newJsonData.length : 1,
                           totalItems: mergedData.length,
                           data: mergedData
-                        }
+                        },
+                        bubbles: true
                       }));
 
 
@@ -712,6 +715,7 @@ export class Blapy {
                         }
                         myContainer.dispatchEvent(new CustomEvent('Blapy_doCustomChange', {
                           detail: aBlapyContainer,
+                          bubbles: true
                         }))
                       }
                     } else if (dataBlapyUpdate === 'remove') {
@@ -752,6 +756,7 @@ export class Blapy {
                       if (updatedElement) {
                         updatedElement.dispatchEvent(new CustomEvent('Blapy_afterContentChange', {
                           detail: myContainer,
+                          bubbles: true
                         }))
                       }
                     }
