@@ -6,6 +6,7 @@
  * File : core/TemplateManager.js
  *
  * Modifications:
+ * - 2026-09-30 - v1.0.6 - EPO - fix error in _applyInitFromProperty when property path is not found in the received jsonDataObj
  * - 2026-08-27 - v1.0.5 - EPO - apply the _applyProcessDataFunctions in _applyDataTransformations even if the jsonDataObj is null
  * - 2026-08-18 - v1.0.4 - EPO - fix error in _applyDataTransformations when jsonDataObj is null
  * - 2026-03-13 - v1.0.3 - EPO - fix test on mustache tags to parse the template with mustache
@@ -17,7 +18,7 @@
  * @see {@link https://github.com/intersel/blapy2}
  * @author : Corentin NELHOMME — corentin.nelhomme@livinweb.fr
  * @author : Emmanuel Podvin - emmanuel.podvin@livinweb.fr
- * @version : 1.0.5
+ * @version : 1.0.6
  * @license : DonationWare — see https://github.com/intersel//blob/master/LICENSE
  * -----------------------------------------------------------------------------------------
  **/
@@ -542,16 +543,15 @@ export class TemplateManager {
       )
 
       if (initFromProp) {
-        const keys = initFromProp.split('.')
-        return keys.reduce((acc, key) => {
-          return acc[key] !== undefined ? acc[key] : acc
-        }, jsonDataObj)
+          return initFromProp
+              .split('.')
+              .reduce((acc, key) => acc?.[key] ?? null, jsonDataObj);
       }
 
       return jsonDataObj
     } catch (e) {
       this.logger.error(
-        'init-search or init-property does not work well on json data of container: ' +
+        'init-property did not work well on received json data of container: ' +
         myContainer.id,
         'templateManager',
       )
